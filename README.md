@@ -1,2 +1,2 @@
 # osakauss
-our supper awesome kernel and user space system
+our super awesome kernel and user space system
