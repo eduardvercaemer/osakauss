@@ -3,8 +3,18 @@ BUILDDIR = ./build
 
 # --------------------------------------------------------------------------- #
 
-OBJS_ = $(shell find $(SRCDIR) -name '*.c')
-OBJS = $(patsubst $(SRCDIR)/%.c,$(BUILDDIR)/%.o,$(OBJS_))
+CC = gcc
+AS = nasm
+LD = ld
+CFLAGS = -nostdlib -m32 -ffreestanding -fno-pie
+LFLAGS = -m elf_i386
+
+# --------------------------------------------------------------------------- #
+
+COBJS  = $(shell find $(SRCDIR) -name '*.c')
+OBJS   = $(patsubst $(SRCDIR)/%.c,$(BUILDDIR)/%.o,$(COBJS))
+SOBJS  = $(shell find $(SRCDIR) -name '*.S')
+OBJS  += $(patsubst $(SRCDIR)/%.S,$(BUILDDIR)/%.S.o,$(SOBJS))
 
 # --------------------------------------------------------------------------- #
 
@@ -20,12 +30,17 @@ dirs:
 	&& mkdir -p $$dirs
 
 build: dirs $(OBJS)
+	@echo objects: $(OBJS)
 	@echo -e " [$(LD)]\tkernel)"
-	@$(CC) -o $(BUILDDIR)/kernel $(OBJS)
+	@$(LD) $(LFLAGS) -T $(SRCDIR)/linker.ld -o $(BUILDDIR)/kernel $(OBJS)
 
 
 # --------------------------------------------------------------------------- #
 
+$(BUILDDIR)/%.S.o: $(SRCDIR)/%.S
+	@echo -e " [$(AS)]\t$(notdir $@)"
+	@$(AS) -f elf32 -o $@ $<
+
 $(BUILDDIR)/%.o: $(SRCDIR)/%.c
 	@echo -e " [$(CC)]\t$(notdir $@)"
-	@$(CC) -o $@ -c $<
+	@$(CC) $(CFLAGS) -o $@ -c $<
