@@ -15,6 +15,10 @@ section .text
 global start
 extern main	        
 
+%include "kernel/GDT.S"
+%include "kernel/IDT.S"
+%include "kernel/ISR.S"
+
 
 start:
   cli 			

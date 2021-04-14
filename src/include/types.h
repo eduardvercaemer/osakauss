@@ -10,3 +10,4 @@ typedef unsigned long long  u64;
 typedef long long           i64;
 typedef u32                 usize;
 typedef i32                 isize;
+typedef char* string; 
