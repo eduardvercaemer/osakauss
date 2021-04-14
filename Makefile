@@ -1,9 +1,3 @@
-## Hi I made some changes.
-## I added two new options:
-## clean
-## qemu
-
-
 SRCDIR   = ./src
 BUILDDIR = ./build
 
@@ -24,9 +18,7 @@ OBJS  += $(patsubst $(SRCDIR)/%.S,$(BUILDDIR)/%.S.o,$(SOBJS))
 
 # --------------------------------------------------------------------------- #
 
-.PHONY: build
-
-# --------------------------------------------------------------------------- #
+.PHONY: dirs build clean qemu
 
 dirs:
 	@mkdir -p $(BUILDDIR)
@@ -36,10 +28,14 @@ dirs:
 	&& mkdir -p $$dirs
 
 build: dirs $(OBJS)
-	@echo objects: $(OBJS)
-	@echo -e " [$(LD)]\tkernel)"
+	@echo -e " [$(LD)]\tkernel"
 	@$(LD) $(LFLAGS) -T $(SRCDIR)/linker.ld -o $(BUILDDIR)/kernel $(OBJS)
 
+clean:
+	@rm -rf $(BUILDDIR)
+
+qemu: build
+	qemu-system-i386 -kernel $(BUILDDIR)/kernel
 
 # --------------------------------------------------------------------------- #
 
@@ -50,22 +46,5 @@ $(BUILDDIR)/%.S.o: $(SRCDIR)/%.S
 $(BUILDDIR)/%.o: $(SRCDIR)/%.c
 	@echo -e " [$(CC)]\t$(notdir $@)"
 	@$(CC) $(CFLAGS) -o $@ -c $<
-
-
-# --------------------------------------------------------------------------- #
-
-
-clean:
-
-	@-rm $(OBJS)\
-		$(BUILDDIR)/kernel\
-
-
-# --------------------------------------------------------------------------- #
-
-
-qemu: build
-	qemu-system-i386 -kernel $(BUILDDIR)/kernel
-
 
 # --------------------------------------------------------------------------- #
