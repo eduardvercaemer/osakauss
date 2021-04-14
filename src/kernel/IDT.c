@@ -3,30 +3,24 @@
 #include <kernel/console.h>
 #include <stdlib.h>
 
-
-
-
-
-struct idt_entry
-{
-    unsigned short base_lo;
-    unsigned short sel;
-    unsigned char always0;
-    unsigned char flags;
-    unsigned short base_hi;
+struct idt_entry {
+    u16 base_lo;
+    u16 sel;
+    u8 always0;
+    u8 flags;
+    u16 base_hi;
 } __attribute__((packed));
-struct idt_ptr
-{
-    unsigned short limit;
-    unsigned int base;
+struct idt_ptr {
+    u16 limit;
+    u32 base;
 } __attribute__((packed));
 struct idt_entry idt[256];
 struct idt_ptr idtp;
 
+/* defined in assembly/kernel/IDT.S */
+extern void idt_load();
 
-
-
-
+/* defined in assembly/kernel/ISR.S */
 extern void isr0();
 extern void isr1();
 extern void isr2();
@@ -59,12 +53,13 @@ extern void isr28();
 extern void isr29();
 extern void isr30();
 extern void isr31();
-
 extern void idt_flush(u32);
 
-extern void isr_init(void)
+/* exports */
+
+extern void
+isr_init(void)
 {
-    
    idt_set_gate( 0, (u32)isr0 , 0x08, 0x8E);
    idt_set_gate( 1, (u32)isr1 , 0x08, 0x8E);
    idt_set_gate( 2, (u32)isr2 , 0x08, 0x8E);
@@ -102,9 +97,11 @@ extern void isr_init(void)
 
    idt_flush((u32)&idtp);
 }
-extern void idt_load();
 
-extern void idt_set_gate(u8 num, unsigned long base, u16 sel, u8 flags)
+/* exports */
+
+extern void
+idt_set_gate(u8 num, unsigned long base, u16 sel, u8 flags)
 {
     idt[num].base_lo = (base & 0xFFFF);
     idt[num].base_hi = (base >> 16) & 0xFFFF;
@@ -113,10 +110,11 @@ extern void idt_set_gate(u8 num, unsigned long base, u16 sel, u8 flags)
     idt[num].flags = flags;
 }
 
-extern void idt_init(void)
+extern void
+idt_init(void)
 {
     idtp.limit = (sizeof (struct idt_entry) * 256) - 1;
-    idtp.base = &idt;
+    idtp.base = (u32)&idt;
     memset(&idt, 0, sizeof(struct idt_entry) * 256);
     idt_load();
 }

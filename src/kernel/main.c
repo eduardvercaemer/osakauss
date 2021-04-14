@@ -3,6 +3,7 @@
 #include <kernel/serial.h>
 #include <kernel/GDT.h>
 #include <kernel/IDT.h>
+#include <kernel/ISR.h>
 
 void main() {
 	gdt_init();
@@ -22,7 +23,8 @@ void main() {
 	console_printf("with console_printf: %s\n", "hello");
 	serial_printf("with serial_printf: %s\n", "hello");
 	
-	//asm volatile("int $0x03");
+	// trigger breakpoint
+	asm volatile("int $0x03");
  
 	//loops forever
     for (;;);

@@ -33,14 +33,11 @@ global isr30
 global isr31 
 global idt_flush
 
-
-
 isr0:
   cli                 
   push byte 0         
   push byte 0         
   jmp isr_common_stub
-  
 isr1:
   cli                 
   push byte 0         
@@ -217,10 +214,7 @@ isr_common_stub:
     pop ds
     popa
     add esp, 8     
-    iret          
-
-
-   
+    iret
 
 idt_flush:
    mov eax, [esp+4]  

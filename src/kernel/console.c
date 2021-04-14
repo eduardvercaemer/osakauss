@@ -24,18 +24,21 @@ static void update_cursor(int x, int y);
 static void enable_cursor(void);
 static void scroll(void);
 
-static inline u8 vga_entry_color(enum vga_color fg, enum vga_color bg)
+static inline u8
+vga_entry_color(enum vga_color fg, enum vga_color bg)
 {
 	return fg | bg << 4;
 }
  
-static inline u16 vga_entry(unsigned char uc, u8 color)
+static inline u16
+vga_entry(unsigned char uc, u8 color)
 {
 	return (u16) uc | (u16) color << 8;
 }
 
 //This scrolls the screen
-static void scroll(void)
+static void
+scroll(void)
 {
 	u16 blank = vga_entry(' ',terminal_color);
 	if(terminal_row >= 25)
@@ -55,14 +58,16 @@ static void scroll(void)
 	
 }
 
-static void terminal_putentryat(char c, u8 color, usize x, usize y)
+static void
+terminal_putentryat(char c, u8 color, usize x, usize y)
 {
 	const usize index = y * VGA_WIDTH + x;
 	terminal_buffer[index] = vga_entry(c, color);
 }
 
 // todo, handle escape sequences to allow color changing through writing etc
-static void putch(char c)
+static void
+putch(char c)
 {   if (c == '\n'){
 		++terminal_row;
 		terminal_column=0;
@@ -96,18 +101,22 @@ static void putch(char c)
 	update_cursor(terminal_column,terminal_row);
 }
 
-static void terminal_write(const char* data, usize size)
+// deprecate ?
+static void
+terminal_write(const char* data, usize size)
 {
 	for (usize i = 0; i < size; i++)
 		putch(data[i]);
 }
 
-static void init_cursor(void){
+static void
+init_cursor(void){
 	enable_cursor();
 	update_cursor(0,0);
 }
 
-static void enable_cursor(void)
+static void
+enable_cursor(void)
 {
 	outb(0x3D4, 0x0A);
 	outb(0x3D5, (inb(0x3D5) & 0xC0) | 14);
@@ -115,13 +124,15 @@ static void enable_cursor(void)
 	outb(0x3D5, (inb(0x3D5) & 0xE0) | 15);
 }
 
-static void disable_cursor(void)
+static void
+disable_cursor(void)
 {
 	outb(0x3D4, 0x0A);
 	outb(0x3D5, 0x20);
 }
 
-static void update_cursor(int x, int y)
+static void
+update_cursor(int x, int y)
 {
 	cursor_x = x;
 	cursor_y = y;
@@ -134,7 +145,8 @@ static void update_cursor(int x, int y)
 	outb(0x3D5, (u8) ((pos >> 8) & 0xFF));
 }
 
-static u16 get_cursor_position(void)
+static u16
+get_cursor_position(void)
 {
 	u16 pos = 0;
 	outb(0x3D4, 0x0F);

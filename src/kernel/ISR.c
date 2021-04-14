@@ -1,14 +1,11 @@
 /*
-Some of the code that belongs to isr is IDT.c
-The location of IDT.c is kernel/IDT.c
- 
-*/
+ * Some of the code that belongs to isr is IDT.c
+ * The location of IDT.c is kernel/IDT.c
+ */
 #include <kernel/ISR.h>
-#include <kernel/console.h>
+#include <kernel/log.h>
 
-unsigned char *exception_messages[] =
-{
-    
+static unsigned char *exception_messages[] = {
     (unsigned char*)"Division by zero", // 0
     (unsigned char*)"Debug", // 1
     (unsigned char*)"Non maskable interrupt", // 2
@@ -43,16 +40,13 @@ unsigned char *exception_messages[] =
     (unsigned char*)"Reserved", // 31
 };
 
-
-void fault_handler(struct regs *r)
+/* used in assembly/kernel/IRS.S */
+extern void
+fault_handler(struct regs *r)
 {
-
-    if (r->int_no < 32)
-    {
-        console_prints(exception_messages[r->int_no]);
-        console_prints(" Exception. System Halted!\n");
+    if (r->int_no < 32) {
+        logf("fault: %s\nhalting system\n", exception_messages[r->int_no]);
         
         for (;;);
     }
-    
 }

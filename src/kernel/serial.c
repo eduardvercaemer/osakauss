@@ -82,5 +82,4 @@ serial_printf(const char *fmt, ...)
 	va_start(args, fmt);
 	formatv(f, fmt, args);
 	va_end(args);
-
 }

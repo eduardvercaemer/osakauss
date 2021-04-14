@@ -1,5 +1,6 @@
 #include <types.h>
 #include <stdlib.h>
+#include <kernel/log.h>
 
 char * itoa( int value, char * str, int base )
 {
@@ -103,8 +104,11 @@ int memcmp(const void* aptr, const void* bptr, usize size) {
 	return 0;
 }
 
+// todo: xxx: fiiiix
 void * malloc(int nbytes)
 {
-	char variable[nbytes];
-	return &variable;
+	logf("malloc: unimplemented!!!\nhalting\n");
+	for(;;);
+	//char variable[nbytes];
+	//return &variable;
 }

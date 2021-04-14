@@ -9,7 +9,10 @@ static struct {
 	u8 console; // console logging enabled
 } require_satisfied;
 
-extern u8 require_log(enum logging_output output)
+/* exports */
+
+extern u8
+require_log(enum logging_output output)
 {
 	switch (output) {
 		case LOG_SERIAL:
@@ -24,10 +27,13 @@ extern u8 require_log(enum logging_output output)
 			return 1;
 		case LOG_BOTH:
 			return require_log(LOG_SERIAL) && require_log(LOG_CONSOLE);
+		default:
+			return 0;
 	}
 }
 
-extern void logf(const char *fmt, ...)
+extern void
+logf(const char *fmt, ...)
 {
 	va_list args;
 	
