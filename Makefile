@@ -6,7 +6,7 @@ BUILDDIR = ./build
 CC = gcc
 AS = nasm
 LD = ld
-CFLAGS =  -O2 -Wall -Wextra -nostdlib -m32 -ffreestanding -fno-pie -I./src/include  -O2 -Wall -Wextra
+CFLAGS = -nostdlib -m32 -ffreestanding -fno-pie -I./src/include  -O2 -Wall -Wextra
 LFLAGS = -m elf_i386
 ASFLAGS = -f elf32 -I./src/include/assembly
 
