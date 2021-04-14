@@ -1,6 +1,5 @@
-
-#include <stdint.h>
-
+#include <types.h>
+#include <stdlib.h>
 
 char * itoa( int value, char * str, int base )
 {
@@ -40,11 +39,18 @@ char * itoa( int value, char * str, int base )
     return rc;
 }
 
-
-
-uint32_t digit_count(int num)
+usize strlen(const char* str)
 {
-  uint32_t count = 0;
+	usize len = 0;
+	while (str[len])
+		len++;
+	return len;
+}
+
+
+u32 digit_count(int num)
+{
+  u32 count = 0;
   if(num == 0)
     return 1;
   while(num > 0){

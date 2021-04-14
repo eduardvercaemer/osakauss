@@ -1,14 +1,15 @@
 #pragma once
+#include <types.h>
 
-static inline unsigned char inb(unsigned short port)
+static inline u8 inb(u16 port)
 {
-  unsigned char data;
+  u8 data;
 
   asm volatile("in %1,%0" : "=a" (data) : "d" (port));
   return data;
 }
 
-static inline void insl(int port, void *addr, int cnt)
+static inline void insl(u16 port, void *addr, usize cnt)
 {
   asm volatile("cld; rep insl" :
                "=D" (addr), "=c" (cnt) :
@@ -16,17 +17,17 @@ static inline void insl(int port, void *addr, int cnt)
                "memory", "cc");
 }
 
-static inline void outb(unsigned short port, unsigned char data)
+static inline void outb(u16 port, u8 data)
 {
   asm volatile("out %0,%1" : : "a" (data), "d" (port));
 }
 
-static inline void outw(unsigned short port, unsigned short data)
+static inline void outw(u16 port, u16 data)
 {
   asm volatile("out %0,%1" : : "a" (data), "d" (port));
 }
 
-static inline void outsl(int port, const void *addr, int cnt)
+static inline void outsl(u16 port, const void *addr, usize cnt)
 {
   asm volatile("cld; rep outsl" :
                "=S" (addr), "=c" (cnt) :

@@ -1,5 +1,6 @@
 #include <kernel/serial.h>
 #include <kernel/console.h>
+
 // todo: create a logging or printing api
 void puts(const char *s)
 {
@@ -11,9 +12,11 @@ void puts(const char *s)
 void main(){
 	
 	require_serial();
-    terminal_initialize();
+    require_console();
 	puts("hello, world");
-    prints("hello, world"); // This prints a string
+	console_setcolor(VGA_COLOR_BLACK, VGA_COLOR_CYAN);
+	console_prints("hello, world\n");
+	console_printh(0xdeadbeef);
 	
     //loops forever
     for (;;);

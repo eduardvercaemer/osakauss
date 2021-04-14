@@ -1,7 +1,7 @@
-#ifndef OSAKAUSS_SERIAL_H
-#define OSAKAUSS_SERIAL_H
-#include "types.h"
-// implementations on serial.c
+#pragma once
+#include <types.h>
+
+/* kernel/serial.c */
 
 /*
  * ask for the serial module to load, you should call this before
@@ -19,5 +19,3 @@ extern char serial_readb(void);
  * blocks until we can send a byte through serial
  */
 extern void serial_writeb(char c);
-
-#endif //OSAKAUSS_SERIAL_H

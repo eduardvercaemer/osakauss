@@ -1,11 +1,37 @@
 #pragma once
+#include <types.h>
 
-#include <stdint.h>
+/* kernel/console.c */
 
-void terminal_setcolor(uint8_t color);
-void prints(const char* data);
-void printh(uint32_t n);
-void printi(int num);
-void printb(uint32_t num);
+/*
+ * ask for the console module to load, use this before any other
+ * methods
+ * returns 1 on success, 0 on failure
+ */
+extern u8 require_console(void);
 
-void terminal_initialize(void);
+extern void console_setcolor(u8 fg, u8 bg);
+extern void console_prints(const char* data);
+extern void console_printh(u32 n);
+extern void console_printi(int num);
+extern void console_printb(u32 num);
+
+/* Hardware text mode color constants. */
+enum vga_color {
+	VGA_COLOR_BLACK = 0,
+	VGA_COLOR_BLUE = 1,
+	VGA_COLOR_GREEN = 2,
+	VGA_COLOR_CYAN = 3,
+	VGA_COLOR_RED = 4,
+	VGA_COLOR_MAGENTA = 5,
+	VGA_COLOR_BROWN = 6,
+	VGA_COLOR_LIGHT_GREY = 7,
+	VGA_COLOR_DARK_GREY = 8,
+	VGA_COLOR_LIGHT_BLUE = 9,
+	VGA_COLOR_LIGHT_GREEN = 10,
+	VGA_COLOR_LIGHT_CYAN = 11,
+	VGA_COLOR_LIGHT_RED = 12,
+	VGA_COLOR_LIGHT_MAGENTA = 13,
+	VGA_COLOR_LIGHT_BROWN = 14,
+	VGA_COLOR_WHITE = 15,
+};
