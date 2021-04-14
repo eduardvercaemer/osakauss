@@ -6,7 +6,7 @@ BUILDDIR = ./build
 CC = gcc
 AS = nasm
 LD = ld
-CFLAGS = -nostdlib -m32 -ffreestanding -fno-pie
+CFLAGS = -nostdlib -m32 -ffreestanding -fno-pie -I./src/include
 LFLAGS = -m elf_i386
 
 # --------------------------------------------------------------------------- #
@@ -29,14 +29,16 @@ dirs:
 
 build: dirs $(OBJS)
 	@echo -e " [$(LD)]\tkernel"
-	@$(LD) $(LFLAGS) -T $(SRCDIR)/linker.ld -o $(BUILDDIR)/kernel $(OBJS)
+	@$(LD) $(LFLAGS) -T $(SRCDIR)/kernel/linker.ld -o $(BUILDDIR)/kernel/kernel $(OBJS)
 
 clean:
 	@rm -rf $(BUILDDIR)
 
-qemu: build
-	qemu-system-i386 -display none -serial stdio -kernel $(BUILDDIR)/kernel
+qemu-serial: build
+	qemu-system-i386 -display none -serial stdio -kernel $(BUILDDIR)/kernel/kernel
 
+qemu: build
+	qemu-system-i386 -serial stdio -kernel $(BUILDDIR)/kernel/kernel
 # --------------------------------------------------------------------------- #
 
 $(BUILDDIR)/%.S.o: $(SRCDIR)/%.S

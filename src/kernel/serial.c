@@ -1,5 +1,5 @@
-#include "ports.h"
-#include "serial.h"
+#include <x86.h>
+#include <kernel/serial.h>
 
 #define PORT_COM1 0x03f8
 
