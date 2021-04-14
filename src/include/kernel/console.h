@@ -11,10 +11,9 @@
 extern u8 require_console(void);
 
 extern void console_setcolor(u8 fg, u8 bg);
-extern void console_prints(const char* data);
-extern void console_printh(u32 n);
-extern void console_printi(int num);
-extern void console_printb(u32 num);
+extern void console_printf(const char *fmt, ...);
+extern void console_puts(const char *s);
+extern void console_putch(char c);
 
 /* Hardware text mode color constants. */
 enum vga_color {

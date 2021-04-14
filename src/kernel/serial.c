@@ -71,3 +71,16 @@ serial_writeb(char val)
 	while (is_transmit_empty() == 0) ;
 	outb(PORT_COM1, val);
 }
+
+extern void
+serial_printf(const char *fmt, ...)
+{
+	va_list args;
+	
+	void (*f)(char) = serial_writeb;
+	
+	va_start(args, fmt);
+	formatv(f, fmt, args);
+	va_end(args);
+
+}

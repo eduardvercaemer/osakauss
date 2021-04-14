@@ -6,7 +6,7 @@ BUILDDIR = ./build
 CC = gcc
 AS = nasm
 LD = ld
-CFLAGS = -nostdlib -m32 -ffreestanding -fno-pie -I./src/include  -O2 -Wall -Wextra
+CFLAGS = -std=gnu99 -nostdlib -m32 -ffreestanding -fno-pie -I./src/include  -O2 -Wall -Wextra
 LFLAGS = -m elf_i386
 ASFLAGS = -f elf32 -I./src/include/assembly
 
@@ -31,7 +31,7 @@ dirs:
 build: dirs $(OBJS)
 	@echo -e " [$(LD)]\tkernel"
 	@$(AS) $(ASFLAGS) -o $(BUILDDIR)/kernel/boot.S.o $(SRCDIR)/kernel/boot.S
-	@$(LD) $(LFLAGS) -T $(SRCDIR)/kernel/linker.ld -o $(BUILDDIR)/kernel/kernel $(OBJS) $(BUILDDIR)/kernel/boot.S.o 
+	@$(LD) $(LFLAGS) -T $(SRCDIR)/kernel/linker.ld -o $(BUILDDIR)/kernel/kernel $(OBJS) $(BUILDDIR)/kernel/boot.S.o
 
 clean:
 	@rm -rf $(BUILDDIR)

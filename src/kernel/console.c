@@ -1,5 +1,6 @@
 #include <kernel/console.h>
 #include <stdlib.h>
+#include <lambda.h>
 #include <x86.h>
 
 /* static members */
@@ -21,6 +22,7 @@ static int cursor_y = 0;
 
 static void update_cursor(int x, int y);
 static void enable_cursor(void);
+static void scroll(void);
 
 static inline u8 vga_entry_color(enum vga_color fg, enum vga_color bg)
 {
@@ -31,8 +33,6 @@ static inline u16 vga_entry(unsigned char uc, u8 color)
 {
 	return (u16) uc | (u16) color << 8;
 }
-
-static void scroll(void);
 
 //This scrolls the screen
 static void scroll(void)
@@ -61,6 +61,7 @@ static void terminal_putentryat(char c, u8 color, usize x, usize y)
 	terminal_buffer[index] = vga_entry(c, color);
 }
 
+// todo, handle escape sequences to allow color changing through writing etc
 static void putch(char c)
 {   if (c == '\n'){
 		++terminal_row;
@@ -145,7 +146,8 @@ static u16 get_cursor_position(void)
 
 /* public exports */
 
-extern u8 require_console(void)
+extern u8
+require_console(void)
 {
 	if (require_satisfied) return 1;
 	
@@ -164,83 +166,34 @@ extern u8 require_console(void)
 	return require_satisfied = 1;
 }
 
-extern void console_setcolor(u8 fg, u8 bg)
+extern void
+console_setcolor(u8 fg, u8 bg)
 {
 	terminal_color = vga_entry_color(fg, bg);
 }
 
-extern void console_prints(const char* data)
+extern void
+console_printf(const char *fmt, ...)
 {
-	terminal_write(data, strlen(data));
+	va_list args;
+	
+	void (*f)(char) = console_putch;
+
+	va_start(args, fmt);
+	formatv(f, fmt, args);
+	va_end(args);
 }
 
-extern void console_printh(u32 n)
+extern void
+console_puts(const char *s)
 {
-	u32 tmp;
-	
-	console_prints("0x");
-	
-	char noZeroes = 1;
-	
-	int i;
-	for (i = 28; i > 0; i -= 4)
-	{
-		tmp = (n >> i) & 0xF;
-		if (tmp == 0 && noZeroes != 0)
-		{
-			continue;
-		}
-		
-		if (tmp >= 0xA)
-		{
-			noZeroes = 0;
-			putch (tmp-0xA+'a' );
-		}
-		else
-		{
-			noZeroes = 0;
-			putch( tmp+'0' );
-		}
+	for (; *s; s++) {
+		console_putch(*s);
 	}
-	
-	tmp = n & 0xF;
-	if (tmp >= 0xA)
-	{
-		putch (tmp-0xA+'a');
-	}
-	else
-	{
-		putch (tmp+'0');
-	}
-	
 }
 
-extern void console_printi(int num)
+extern void
+console_putch(char c)
 {
-	char str_num[digit_count(num)+1];
-	itoa(num, str_num,10);
-	console_prints(str_num);
-}
-
-extern void console_printb(u32 num)
-{
-  char bin_arr[32];
-  u32 index = 31;
-  u32 i;
-  while (num > 0){
-    if(num & 1){
-      bin_arr[index] = '1';
-    }else{
-      bin_arr[index] = '0';
-    }
-    index--;
-    num >>= 1;
-  }
-
-  for(i = 0; i < 32; ++i){
-   if(i <= index)
-      putch('0');
-   else
-     putch(bin_arr[i]);
-  }
+	putch(c);
 }

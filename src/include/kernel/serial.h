@@ -1,5 +1,6 @@
 #pragma once
 #include <types.h>
+#include <stdlib.h>
 
 /* kernel/serial.c */
 
@@ -19,3 +20,8 @@ extern char serial_readb(void);
  * blocks until we can send a byte through serial
  */
 extern void serial_writeb(char c);
+
+/*
+ * write a format string to serial
+ */
+extern void serial_printf(const char *fmt, ...);
