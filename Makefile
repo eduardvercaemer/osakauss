@@ -35,7 +35,7 @@ clean:
 	@rm -rf $(BUILDDIR)
 
 qemu: build
-	qemu-system-i386 -kernel $(BUILDDIR)/kernel
+	qemu-system-i386 -display none -serial stdio -kernel $(BUILDDIR)/kernel
 
 # --------------------------------------------------------------------------- #
 
