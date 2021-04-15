@@ -22,3 +22,5 @@ extern u8 require_log(enum logging_output output);
  * log using a format string
  */
 extern void logf(const char *fmt, ...);
+
+#define tracef(fmt, ...) logf("%s :: " fmt, __func__, __VA_ARGS__)
