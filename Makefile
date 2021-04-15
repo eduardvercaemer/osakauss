@@ -7,7 +7,7 @@ CC = gcc
 AS = nasm
 LD = ld
 OBJCOPY = objcopy
-CFLAGS = -std=gnu99 -nostdlib -m32 -ffreestanding -fno-pie -I./src/include -g -O2 -Wall -Wextra
+CFLAGS = -std=gnu99 -nostdlib -m32 -ffreestanding -fno-pie -fno-builtin -fno-stack-protector -I./src/include -g -O2 -Wall -Wextra
 LFLAGS = -m elf_i386
 ASFLAGS = -g -f elf32 -I./src/include/assembly
 

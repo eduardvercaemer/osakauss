@@ -4,6 +4,9 @@
 #include <kernel/GDT.h>
 #include <kernel/IDT.h>
 #include <kernel/ISR.h>
+#include <kernel/IRQ.h>
+
+
 
 const u32 magic = 0xdeadbeef;
 
@@ -11,6 +14,7 @@ void main() {
 	gdt_init();
 	idt_init();
 	isr_init();
+	irq_init();
 	
 	// we can select to log to serial, console, or both
 	require_log(LOG_BOTH);
