@@ -5,48 +5,53 @@
 #include <kernel/ISR.h>
 #include <kernel/log.h>
 
-static unsigned char *exception_messages[] = {
-    (unsigned char*)"Division by zero", // 0
-    (unsigned char*)"Debug", // 1
-    (unsigned char*)"Non maskable interrupt", // 2
-    (unsigned char*)"Breakpoint", // 3
-    (unsigned char*)"Into detected overflow", // 4
-    (unsigned char*)"Out of bounds exception", //5
-    (unsigned char*)"Invalid opcode", // 6
-    (unsigned char*)"No coprocessor", // 7
-    (unsigned char*)"Double fault", // 8
-    (unsigned char*)"Coprocessor segment overrun", // 9
-    (unsigned char*)"Bad TSS", // 10
-    (unsigned char*)"Segment not present", // 11
-    (unsigned char*)"Stack fault", // 12
-    (unsigned char*)"General protection fault", // 13
-    (unsigned char*)"Page fault", // 14
-    (unsigned char*)"Unknown interrupt", // 15
-    (unsigned char*)"Coprocessor fault", // 16
-    (unsigned char*)"Alignment check", // 17
-    (unsigned char*)"Machine check", // 18
-    (unsigned char*)"Reserved", // 19
-    (unsigned char*)"Reserved", // 20
-    (unsigned char*)"Reserved", // 21
-    (unsigned char*)"Reserved", // 22
-    (unsigned char*)"Reserved", // 23
-    (unsigned char*)"Reserved", // 24
-    (unsigned char*)"Reserved", // 25
-    (unsigned char*)"Reserved", // 26
-    (unsigned char*)"Reserved", // 27
-    (unsigned char*)"Reserved", // 28
-    (unsigned char*)"Reserved", // 29
-    (unsigned char*)"Reserved", // 30
-    (unsigned char*)"Reserved", // 31
+static const char *exception_messages[] = {
+    "Division by zero", // 0
+    "Debug", // 1
+    "Non maskable interrupt", // 2
+    "Breakpoint", // 3
+    "Into detected overflow", // 4
+    "Out of bounds exception", //5
+    "Invalid opcode", // 6
+    "No coprocessor", // 7
+    "Double fault", // 8
+    "Coprocessor segment overrun", // 9
+    "Bad TSS", // 10
+    "Segment not present", // 11
+    "Stack fault", // 12
+    "General protection fault", // 13
+    "Page fault", // 14
+    "Unknown interrupt", // 15
+    "Coprocessor fault", // 16
+    "Alignment check", // 17
+    "Machine check", // 18
+    "Reserved", // 19
+    "Reserved", // 20
+    "Reserved", // 21
+    "Reserved", // 22
+    "Reserved", // 23
+    "Reserved", // 24
+    "Reserved", // 25
+    "Reserved", // 26
+    "Reserved", // 27
+    "Reserved", // 28
+    "Reserved", // 29
+    "Reserved", // 30
+    "Reserved", // 31
 };
 
 /* used in assembly/kernel/IRS.S */
 extern void
 fault_handler(struct regs *r)
 {
+	// todo, add method to insert fault handlers
+	if (r->int_no == 14) {
+		return paging_page_fault(r);
+	}
+	
     if (r->int_no < 32) {
-        logf("fault: %s\nhalting system\n", exception_messages[r->int_no]);
-        
+        tracef("fault: %s\n", exception_messages[r->int_no]);
+        tracef("%s", "> halting \n");
         for (;;);
     }
 }
