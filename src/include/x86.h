@@ -35,6 +35,17 @@ static inline void outsl(u16 port, const void *addr, usize cnt)
                "cc");
 }
 
+static inline void sti(){
+  asm volatile("sti");
+}
+static inline void cli(){
+  asm volatile("cli");
+}
+
+static inline void enable_interrupts(){
+  sti();
+}
+
 static inline void hang(void)
 {
 	for (;;) ;

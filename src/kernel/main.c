@@ -1,4 +1,6 @@
 #include <kernel/log.h>
+#include <kernel/console.h>
+#include <kernel/serial.h>
 #include <kernel/paging.h>
 #include <kernel/phys.h>
 #include <kernel/heap.h>
@@ -6,6 +8,7 @@
 #include <kernel/IDT.h>
 #include <kernel/ISR.h>
 #include <kernel/IRQ.h>
+#include <kernel/timer.h>
 #include <x86.h>
 
 const u32 magic = 0xdeadbeef;
@@ -21,6 +24,9 @@ init(void)
 	idt_init();
 	isr_init();
 	irq_init();
+	enable_
+	enable_interrupts();
+	timer_init(100);
 	
 	paging_init();  // this identity-maps the early kernel (i.e. 0 -> physmem_base will be mapped)
 	physmem_init(); // at this point, we can use the physmem allocator (i.e. alloc, free)
@@ -61,6 +67,10 @@ void main() {
 	*heap2 = *heap1;
 	tracef("> read and write %x\n", *heap2);
 	
+	tracef("testing timers\n", NULL);
+	timer_wait(100);
+	tracef("> waited 100 ticks\n", NULL);
+	
 	tracef("testing page faults\n", NULL);
 	u32 * ptr = (u32*)0xa0000000;
 	u32 tmp;
@@ -71,7 +81,7 @@ void main() {
 	*ptr = 0xdeadbeef;
 	
 	// trigger breakpoint
-	asm volatile("int $3");
+	asm volatile("int $0x03");
  
 	//loops forever
     for (;;);
