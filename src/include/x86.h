@@ -34,3 +34,8 @@ static inline void outsl(u16 port, const void *addr, usize cnt)
                "d" (port), "0" (addr), "1" (cnt) :
                "cc");
 }
+
+static inline void hang(void)
+{
+	for (;;) ;
+}
