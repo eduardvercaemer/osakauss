@@ -5,7 +5,8 @@
 static void format_string(void (*f)(char), const char *s);
 static void format_i32_base(void (*f)(char), i32 n, u8 base);
 static void format_i32(void (*f)(char), i32 n);
-static void format_h32(void (*f)(char), u32 n);
+static void format_h32(void (*f)(char), u32 n, bool noZeroes);
+static void format_pointer(void (*f)(char), u32 p);
 
 static void
 format_string(void (*f)(char), const char *s)
@@ -54,25 +55,25 @@ format_i32(void (*f)(char), i32 n)
 }
 
 static void
-format_h32(void (*f)(char), u32 n)
+format_h32(void (*f)(char), u32 n, bool noZeroes)
 {
 	u32 tmp;
-	
 	f('0'); f('x');
 	
-	char noZeroes = 1;
 	int i;
 	for (i = 28; i > 0; i -= 4) {
 		tmp = (n >> i) & 0xF;
 		if (tmp == 0 && noZeroes != 0) {
+			continue;
+		} else if (tmp == 0) {
+			f('0');
 			continue;
 		}
 		
 		if (tmp >= 0xA) {
 			noZeroes = 0;
 			f(tmp - 0xA + 'a');
-		}
-		else {
+		} else {
 			noZeroes = 0;
 			f(tmp + '0');
 		}
@@ -81,10 +82,24 @@ format_h32(void (*f)(char), u32 n)
 	tmp = n & 0xF;
 	if (tmp >= 0xA) {
 		f(tmp - 0xA + 'a');
-	}
-	else {
+	} else {
 		f(tmp + '0');
 	}
+}
+
+static void
+format_pointer(void (*f)(char), u32 p)
+{
+	if (!p) { // null pointer
+		f('(');
+		f('n');
+		f('i');
+		f('l');
+		f(')');
+		return;
+	}
+	
+	format_h32(f, p, false);
 }
 
 /* exports */
@@ -113,12 +128,17 @@ formatv(void (*f)(char), const char *fmt, va_list args)
 					}
 					case 'x': {// hex
 						u32 n = va_arg (args, u32);
-						format_h32 (f, n);
+						format_h32 (f, n, true);
 						break;
 					}
 					case 'd': {// int
 						i32 n = va_arg (args, i32);
 						format_i32 (f, n);
+						break;
+					}
+					case 'p': {// pointer
+						u32 p = va_arg(args, u32);
+						format_pointer(f, p);
 						break;
 					}
 					case '%': {// esacped %
