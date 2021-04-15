@@ -23,9 +23,9 @@ extern void irq15();
 
 
 
-extern void irq_install_handler(int irq, void (*handler)(struct regs *r));
+extern void install_handler(int irq, void (*handler)(struct regs *r));
 
-extern void irq_uninstall_handler(int irq);
+extern void uninstall_handler(int irq);
 
 
 extern void irq_init();

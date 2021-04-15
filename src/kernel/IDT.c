@@ -53,6 +53,7 @@ extern void isr28();
 extern void isr29();
 extern void isr30();
 extern void isr31();
+extern void isr128();
 extern void idt_flush(u32);
 
 /* exports */
@@ -77,8 +78,6 @@ isr_init(void)
    idt_set_gate( 14, (u32)isr14 , 0x08, 0x8E);
    idt_set_gate( 15, (u32)isr15 , 0x08, 0x8E);
    idt_set_gate( 16, (u32)isr16 , 0x08, 0x8E);
-   idt_set_gate( 16, (u32)isr16 , 0x08, 0x8E);
-   idt_set_gate( 16, (u32)isr16 , 0x08, 0x8E);
    idt_set_gate( 17, (u32)isr17 , 0x08, 0x8E);
    idt_set_gate( 18, (u32)isr18 , 0x08, 0x8E);
    idt_set_gate( 19, (u32)isr19 , 0x08, 0x8E);
@@ -94,6 +93,7 @@ isr_init(void)
    idt_set_gate( 29, (u32)isr29 , 0x08, 0x8E);
    idt_set_gate( 30, (u32)isr30 , 0x08, 0x8E);
    idt_set_gate( 31, (u32)isr31 , 0x08, 0x8E);
+   idt_set_gate( 128, (u32)isr128 , 0x08, 0x8E);
 
    idt_flush((u32)&idtp);
 }

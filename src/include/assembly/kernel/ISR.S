@@ -31,6 +31,7 @@ global isr28
 global isr29
 global isr30
 global isr31 
+global isr128
 global idt_flush
 
 isr0:
@@ -96,7 +97,7 @@ isr12:
   jmp isr_common_stub 
 isr13:
   cli                 
-  push byte 13        
+  push byte 13
   jmp isr_common_stub 
 isr14:
   cli                 
@@ -189,6 +190,13 @@ isr31:
   jmp isr_common_stub
 
 
+isr128:
+  cli                 
+  push byte 0         
+  push 128        
+  jmp isr_common_stub
+
+
 extern fault_handler
 
 
@@ -216,7 +224,10 @@ isr_common_stub:
     add esp, 8     
     iret
 
+
+
+
 idt_flush:
-   mov eax, [esp+4]  
-   lidt [eax]        
-   ret
+    mov eax, [esp+4]  
+    lidt [eax]        
+    ret

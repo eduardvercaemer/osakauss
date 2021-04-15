@@ -24,7 +24,6 @@ init(void)
 	idt_init();
 	isr_init();
 	irq_init();
-	enable_
 	enable_interrupts();
 	timer_init(100);
 	
