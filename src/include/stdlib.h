@@ -7,12 +7,10 @@ extern char *itoa(int value, char *str, int base);
 extern u32 digit_count(int num);
 extern usize strlen(const char* str);
 
-int memcmp(const void*, const void*, usize);
-void *memcpy(void* __restrict, const void* __restrict, usize);
-void *memmove(void*, const void*, usize);
-void *memset(void*, int, usize);
-
-void *malloc(int nbytes);
+extern int   memcmp(const void*, const void*, usize);
+extern void *memcpy(void* __restrict, const void* __restrict, usize);
+extern void *memmove(void*, const void*, usize);
+extern void *memset(void*, u8, usize);
 
 /* libs/format.c */
 extern void format(void (*f)(char), const char *fmt, ...);

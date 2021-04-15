@@ -63,7 +63,7 @@ u32 digit_count(int num)
 
 
 
-void* memset(void* bufptr, int value, usize size) {
+void* memset(void* bufptr, u8 value, usize size) {
 	unsigned char* buf = (unsigned char*) bufptr;
 	for (usize i = 0; i < size; i++)
 		buf[i] = (unsigned char) value;
@@ -102,13 +102,4 @@ int memcmp(const void* aptr, const void* bptr, usize size) {
 			return 1;
 	}
 	return 0;
-}
-
-// todo: xxx: fiiiix
-void * malloc(int nbytes)
-{
-	logf("malloc: unimplemented!!!\nhalting\n");
-	for(;;);
-	//char variable[nbytes];
-	//return &variable;
 }
