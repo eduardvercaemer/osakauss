@@ -5,6 +5,8 @@
 #include <kernel/IDT.h>
 #include <kernel/ISR.h>
 
+const u32 magic = 0xdeadbeef;
+
 void main() {
 	gdt_init();
 	idt_init();
@@ -12,7 +14,7 @@ void main() {
 	
 	// we can select to log to serial, console, or both
 	require_log(LOG_BOTH);
-	logf("hello, %s, this is a hex number %x\n", "world", 0xdeadbeef);
+	logf("hello, %s, this is a hex number %x\n", "world", magic);
 	logf("and this is an escaped %%\n");
 	logf("and this is an integer %d\n", 6935);
 	logf("this is a negative integer %d\n", -421);

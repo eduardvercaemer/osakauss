@@ -6,20 +6,21 @@ BUILDDIR = ./build
 CC = gcc
 AS = nasm
 LD = ld
-CFLAGS = -std=gnu99 -nostdlib -m32 -ffreestanding -fno-pie -I./src/include  -O2 -Wall -Wextra
+OBJCOPY = objcopy
+CFLAGS = -std=gnu99 -nostdlib -m32 -ffreestanding -fno-pie -I./src/include -g -O2 -Wall -Wextra
 LFLAGS = -m elf_i386
-ASFLAGS = -f elf32 -I./src/include/assembly
+ASFLAGS = -g -f elf32 -I./src/include/assembly
 
 # --------------------------------------------------------------------------- #
 
 COBJS  = $(shell find $(SRCDIR) -name '*.c')
 OBJS   = $(patsubst $(SRCDIR)/%.c,$(BUILDDIR)/%.o,$(COBJS))
-SOBJS  = $(shell find $(SRCDIR) -name '*.S')
+#SOBJS  = $(shell find $(SRCDIR) -name '*.S')
 #OBJS  += $(patsubst $(SRCDIR)/%.S,$(BUILDDIR)/%.S.o,$(SOBJS))
 
 # --------------------------------------------------------------------------- #
 
-.PHONY: dirs build clean qemu
+.PHONY: dirs build clean qemu qemu-serial dbg
 
 dirs:
 	@mkdir -p $(BUILDDIR)
@@ -28,10 +29,7 @@ dirs:
 	&& cd ../$(BUILDDIR) \
 	&& mkdir -p $$dirs
 
-build: dirs $(OBJS)
-	@echo -e " [$(LD)]\tkernel"
-	@$(AS) $(ASFLAGS) -o $(BUILDDIR)/kernel/boot.S.o $(SRCDIR)/kernel/boot.S
-	@$(LD) $(LFLAGS) -T $(SRCDIR)/kernel/linker.ld -o $(BUILDDIR)/kernel/kernel $(OBJS) $(BUILDDIR)/kernel/boot.S.o
+build: dirs $(BUILDDIR)/kernel/kernel
 
 clean:
 	@rm -rf $(BUILDDIR)
@@ -41,8 +39,29 @@ qemu-serial: build
 
 qemu: build
 	qemu-system-i386 -serial stdio -kernel $(BUILDDIR)/kernel/kernel
+
+dbg: build $(BUILDDIR)/kernel/kernel.dbg
+	qemu-system-i386 -serial stdio -kernel $(BUILDDIR)/kernel/kernel -s -S &
+	@sleep 1
+	gdb -x ./qemu.dbg
+
 # --------------------------------------------------------------------------- #
 
+$(BUILDDIR)/kernel/kernel: $(BUILDDIR)/kernel/kernel.elf
+	@echo -e " [$(OBJCOPY)]\tkernel"
+	@$(OBJCOPY) --strip-unneeded $< $@
+
+$(BUILDDIR)/kernel/kernel.dbg: $(BUILDDIR)/kernel/kernel.elf
+	@echo -e " [$(OBJCOPY)]\tkernel.dbg"
+	@$(OBJCOPY) --only-keep-debug $< $@
+
+$(BUILDDIR)/kernel/kernel.elf: $(OBJS)
+	@echo -e " [$(AS)]\tboot.S.o"
+	@$(AS) $(ASFLAGS) -o $(BUILDDIR)/kernel/boot.S.o $(SRCDIR)/kernel/boot.S
+	@echo -e " [$(LD)]\tkernel.elf"
+	@$(LD) $(LFLAGS) -T $(SRCDIR)/kernel/linker.ld -o $(BUILDDIR)/kernel/kernel.elf $(OBJS) $(BUILDDIR)/kernel/boot.S.o
+
+# --------------------------------------------------------------------------- #
 
 #$(BUILDDIR)/%.S.o: $(SRCDIR)/%.S
 #	@echo -e " [$(AS)]\t$(notdir $@)"
