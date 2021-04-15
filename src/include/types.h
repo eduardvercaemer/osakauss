@@ -11,3 +11,6 @@ typedef long long           i64;
 typedef u32                 usize;
 typedef i32                 isize;
 typedef char*               string;
+typedef u8                  bool;
+#define true                1
+#define false               0
