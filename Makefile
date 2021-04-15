@@ -35,15 +35,15 @@ clean:
 	@rm -rf $(BUILDDIR)
 
 qemu-serial: build
-	qemu-system-i386 -display none -serial stdio -kernel $(BUILDDIR)/kernel/kernel
+	@qemu-system-i386 -display none -serial stdio -kernel $(BUILDDIR)/kernel/kernel
 
 qemu: build
-	qemu-system-i386 -serial stdio -kernel $(BUILDDIR)/kernel/kernel
+	@qemu-system-i386 -serial stdio -kernel $(BUILDDIR)/kernel/kernel
 
 dbg: build $(BUILDDIR)/kernel/kernel.dbg
-	qemu-system-i386 -serial stdio -kernel $(BUILDDIR)/kernel/kernel -s -S &
+	@qemu-system-i386 -serial stdio -kernel $(BUILDDIR)/kernel/kernel -s -S &
 	@sleep 1
-	gdb -x ./qemu.dbg
+	@gdb -x ./qemu.dbg
 
 # --------------------------------------------------------------------------- #
 

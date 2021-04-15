@@ -1,13 +1,11 @@
 #include <kernel/log.h>
 #include <kernel/console.h>
 #include <kernel/serial.h>
-#include <kernel/mem.h>
+#include <kernel/paging.h>
 #include <kernel/GDT.h>
 #include <kernel/IDT.h>
 #include <kernel/ISR.h>
 #include <kernel/IRQ.h>
-
-
 
 const u32 magic = 0xdeadbeef;
 
@@ -21,10 +19,12 @@ void main() {
 	isr_init();
 	irq_init();
 	
-	kheap_init();
 	paging_init();
 	
-	logf("this is a message after setting up paging !\n");
+	logf("this is a message after setting up paging !\n\n");
+	
+	// test kmalloc
+	u32 *p = kmalloc(16);
 	
 	// trigger page fault
 	u32 *ptr = (u32*)0xa0000000;
@@ -36,9 +36,6 @@ void main() {
 	*ptr = 0xdeadbeef;
 	
 	// trigger breakpoint
-	asm volatile("int $3");
-	asm volatile("int $3");
-	asm volatile("int $3");
 	asm volatile("int $3");
  
 	//loops forever

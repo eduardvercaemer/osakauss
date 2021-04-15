@@ -32,23 +32,10 @@ struct page_d {
 	u32 phys;
 };
 
-/* kernel/mem/kheap.c */
-
-/*
- * Initialize the heap, must call this before any ohter methods
- */
-extern void kheap_init(void);
-
-extern u32 placement_address;
-extern usize kmalloc(u32 sz);
-extern usize kmalloc_a(u32 sz); // aligned
-extern usize kmalloc_ap(u32 sz, u32* phys); // aligned
-extern usize kmalloc__(u32 sz, bool align, u32 *phys);
-
 /* kernel/mem/paging.c */
 
 /*
- * Setups and enables paging
+ * Setups the kernel directory, the physical memory allocator, the heap, and enables paging
  */
 extern void paging_init(void);
 
@@ -56,7 +43,6 @@ extern void paging_init(void);
  * Load the given page directory
  */
 extern void paging_switch_dir(struct page_d *dir);
-
 
 /*
  * Get a pointer to the page entry that maps the given vaddr given,
@@ -69,3 +55,8 @@ extern struct page *paging_get_page(usize address, bool make, struct page_d *dir
  * Handler for page faults.
  */
 extern void paging_page_fault(struct regs *r);
+
+/*
+ * TODO: dump the current status of a page directory
+ */
+extern void paging_dump_directory(const struct page_d *dir);
