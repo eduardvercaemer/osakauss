@@ -17,17 +17,16 @@ void main() {
 	irq_init();
 	
 	// we can select to log to serial, console, or both
-	require_log(LOG_BOTH);
-	logf("hello, %s, this is a hex number %x\n", "world", magic);
-	logf("and this is an escaped %%\n");
-	logf("and this is an integer %d\n", 6935);
-	logf("this is a negative integer %d\n", -421);
+	require_log(LOG_SERIAL);
+	logf("   ...:::   asokauss v0.0.0  :::...\n\n");
+	//logf("hello, %s, this is a hex number %x\n", "world", magic);
+	//logf("and this is an escaped %%\n");
+	//logf("and this is an integer %d\n", 6935);
+	//logf("this is a negative integer %d\n", -421);
 	
-	// or we can simply use the methods they provide
-	require_console(); // in this case this are no-ops, since log already required them
-	require_serial();
-	console_printf("with console_printf: %s\n", "hello");
-	serial_printf("with serial_printf: %s\n", "hello");
+	if (require_console()) {
+		logf("> console init successful\n");
+	}
 	
 	// trigger breakpoint
 	asm volatile("int $0x03");
