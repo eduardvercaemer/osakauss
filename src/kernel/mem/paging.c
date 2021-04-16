@@ -2,6 +2,7 @@
 #include <kernel/paging.h>
 #include <kernel/heap.h>
 #include <kernel/log.h>
+#include <kernel/IRQ.h>
 #include <stdlib.h>
 #include <x86.h>
 
@@ -69,12 +70,15 @@ paging_init(void)
 		table = (struct page_t *) physmem_base;
 		physmem_base += 0x1000;
 		memset(table, 0, 0x1000);
-		kernel_directory->tables[table_idx] = heap_base;
+		kernel_directory->tables[table_idx] = (struct page_t *) heap_base;
 		kernel_directory->tables_phys[table_idx] = (u32) table | 0x7;
 	}
-	struct page_t *page = (struct page_t *) &table->pages[page_idx];
+	struct page *page = (struct page *) &table->pages[page_idx];
 	map_page(page, (u32)table/0x1000, 1, 1);
 	heap_base += 0x1000;
+	
+	tracef("> installing page fault handler\n", NULL);
+	install_handler(14, paging_page_fault);
 	
 	// Now, enable paging!
 	tracef("> enabling paging\n", NULL);
@@ -106,12 +110,14 @@ paging_kmap(u32 paddr, u32 vaddr)
 	struct page_t *table = kernel_directory->tables[table_idx];
 	tracef("> table at [%p]\n", table);
 	if (!table) {
-		u32 paddr = physmem_alloc();
+		u32 table_paddr = physmem_alloc();
 		table = (struct page_t *) kmalloc_a(0x1000);
+		memset(table, 0, 0x1000);
 		tracef("> allocating new page table at [%p]\n", table);
 		kernel_directory->tables[table_idx] = table;
-		kernel_directory->tables_phys[table_idx] = ((u32) table) | 0x7;
-		memset(table, 0, 0x1000);
+		kernel_directory->tables_phys[table_idx] = ((u32) table_paddr) | 0x7;
+		struct page *page = (struct page *) &table->pages[page_idx];
+		map_page(page, (u32)table/0x1000, 1, 1);
 	}
 	
 	struct page *page = &table->pages[page_idx];
@@ -140,7 +146,8 @@ paging_page_fault(struct regs *r)
 		not_present ? "(not present) " : "",
 		write ? "(write) " : "(read) ",
 		user ? "(user-mode) " : "",
-		reserved ? "(reserved) " : "");
+		reserved ? "(reserved) " : "",
+		id ? "(instruction fetch) " : "");
 	
 	// handle fault
 	tracef("> halting\n", NULL);
