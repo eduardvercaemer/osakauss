@@ -19,17 +19,6 @@
 
 /* exports */
 
-extern struct frame_bitmap *
-frame_new(u32 nframes)
-{
-	struct frame_bitmap *map = (struct frame_bitmap *) kmalloc(sizeof *map);
-	map->frames = (u32 *) kmalloc(4 * INDEX_FROM_BIT(nframes));
-	memset(map->frames, 0, 4 * INDEX_FROM_BIT(nframes));
-	
-	map->nframes = nframes;
-	return map;
-}
-
 // Set a bit in the frames bitset
 extern void
 frame_set(struct frame_bitmap *map, u32 frame)

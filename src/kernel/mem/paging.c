@@ -1,5 +1,6 @@
 #include <kernel/phys.h>
 #include <kernel/paging.h>
+#include <kernel/heap.h>
 #include <kernel/log.h>
 #include <stdlib.h>
 #include <x86.h>
@@ -59,6 +60,22 @@ paging_init(void)
 		addr += 0x1000;
 	}
 	
+	tracef("> creating heap table for [%p] at [%p]\n", heap_base, physmem_base);
+	u32 page_idx  = (heap_base / 0x1000) % 1024;
+	u32 table_idx = (heap_base / 0x1000) / 1024;
+	struct page_t *table = kernel_directory->tables[table_idx];
+	if (!table) {
+		tracef("> allocating page table index %d at [%p]\n", table_idx, physmem_base);
+		table = (struct page_t *) physmem_base;
+		physmem_base += 0x1000;
+		memset(table, 0, 0x1000);
+		kernel_directory->tables[table_idx] = heap_base;
+		kernel_directory->tables_phys[table_idx] = (u32) table | 0x7;
+	}
+	struct page_t *page = (struct page_t *) &table->pages[page_idx];
+	map_page(page, (u32)table/0x1000, 1, 1);
+	heap_base += 0x1000;
+	
 	// Now, enable paging!
 	tracef("> enabling paging\n", NULL);
 	paging_switch_dir(kernel_directory);
@@ -87,8 +104,10 @@ paging_kmap(u32 paddr, u32 vaddr)
 	tracef("> on index %d\n", page_idx);
 	
 	struct page_t *table = kernel_directory->tables[table_idx];
+	tracef("> table at [%p]\n", table);
 	if (!table) {
-		table = (struct page_t *) physmem_alloc();
+		u32 paddr = physmem_alloc();
+		table = (struct page_t *) kmalloc_a(0x1000);
 		tracef("> allocating new page table at [%p]\n", table);
 		kernel_directory->tables[table_idx] = table;
 		kernel_directory->tables_phys[table_idx] = ((u32) table) | 0x7;

@@ -8,10 +8,6 @@ struct frame_bitmap {
 #define INDEX_FROM_BIT(a) (a/(8*4))
 #define OFFSET_FROM_BIT(a) (a%(8*4))
 
-// Create a frame map
-extern struct frame_bitmap *
-frame_new(u32 nframes);
-
 // Set a bit in the frames bitset
 extern void
 frame_set(struct frame_bitmap *map, u32 frame);

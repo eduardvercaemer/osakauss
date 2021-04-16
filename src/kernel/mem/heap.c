@@ -1,8 +1,17 @@
 #include <kernel/heap.h>
 #include <kernel/log.h>
-#include "phys.h"
+#include <kernel/paging.h>
+#include <kernel/phys.h>
 
 /* exports */
+
+u32 heap_base = 0x80000000;
+
+extern void
+heap_init(void)
+{
+	// TODO: incorporate heap allocator
+}
 
 extern usize
 kmalloc(u32 sz)
@@ -25,26 +34,16 @@ kmalloc_ap(u32 sz, u32* phys)
 extern usize
 kmalloc__(u32 sz, bool align, u32 *phys)
 {
-	if (!physmem_ready) { // only use placement allocation while physmem manager is not ready
-		if (align == 1 && (placement_address & 0xfff)) { // page not already aligned
-			placement_address &= 0xfffff000;
-			placement_address += 0x00001000;
-		}
-		
-		if (phys) {
-			*phys = placement_address;
-		}
-		
-		u32 tmp = placement_address;
-		placement_address += sz;
-		
-		//tracef("[%p] %s %d bytes\n",
-		//       tmp,
-		//       align ? "(align)" : "",
-		//       sz);
-		
-		return tmp;
-	}
+	// for now kmaloc just allocates a whole page cause why not
+	u32 ret;
 	
-	tracef("unimplemented: heap allocation\n", NULL);
+	tracef("request for %d bytes\n", sz);
+	
+	u32 paddr = physmem_alloc();
+	paging_kmap(paddr, heap_base);
+	ret = heap_base;
+	heap_base += 0x1000;
+	
+	tracef("> %p\n", ret);
+	return ret;
 }
