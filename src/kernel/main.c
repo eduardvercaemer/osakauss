@@ -10,6 +10,7 @@
 #include <kernel/IRQ.h>
 #include <kernel/timer.h>
 #include <x86.h>
+#include <kernel/syscall.h>
 
 const u32 magic = 0xdeadbeef;
 
@@ -30,6 +31,7 @@ init(void)
 	paging_init();  // this identity-maps the early kernel (i.e. 0 -> physmem_base will be mapped)
 	physmem_init(); // at this point, we can use the physmem allocator (i.e. alloc, free)
 	heap_init();    // after this, and _only_ after this, we can use the usual kmalloc etc
+	syscall_init(); // broken
 }
 
 void main() {
@@ -69,6 +71,9 @@ void main() {
 	tracef("testing timers\n", NULL);
 	timer_wait(100);
 	tracef("> waited 100 ticks\n", NULL);
+	
+	tracef("testing audio\n", NULL);
+	beep(100, 10);
 	
 	tracef("testing page faults\n", NULL);
 	u32 * ptr = (u32*)0xa0000000;

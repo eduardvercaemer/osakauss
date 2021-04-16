@@ -18,13 +18,9 @@ global start
 extern main	        
 
 %include "kernel/GDT.S"
-%include "kernel/TSS.S"
 %include "kernel/IDT.S"
 %include "kernel/ISR.S"
 %include "kernel/IRQ.S"
-
-
-
 
 start:
   cli 			

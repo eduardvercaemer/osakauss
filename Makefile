@@ -10,6 +10,7 @@ OBJCOPY = objcopy
 CFLAGS = -std=gnu99 -nostdlib -m32 -ffreestanding -fno-pie -fno-builtin -fno-stack-protector -I./src/include -g -O2 -Wall -Wextra
 LFLAGS = -m elf_i386
 ASFLAGS = -g -f elf32 -I./src/include/assembly
+QEMU_OPTIONS = -soundhw pcspk
 
 # --------------------------------------------------------------------------- #
 
@@ -35,13 +36,13 @@ clean:
 	@rm -rf $(BUILDDIR)
 
 qemu-serial: build
-	@qemu-system-i386 -display none -serial stdio -kernel $(BUILDDIR)/kernel/kernel
+	@qemu-system-i386 $(QEMU_OPTIONS) -display none -serial stdio -kernel $(BUILDDIR)/kernel/kernel
 
 qemu: build
-	@qemu-system-i386 -serial stdio -kernel $(BUILDDIR)/kernel/kernel
+	@qemu-system-i386 $(QEMU_OPTIONS) -serial stdio -kernel $(BUILDDIR)/kernel/kernel
 
 dbg: build $(BUILDDIR)/kernel/kernel.dbg
-	@qemu-system-i386 -serial stdio -kernel $(BUILDDIR)/kernel/kernel -s -S &
+	@qemu-system-i386 $(QEMU_OPTIONS) -serial stdio -kernel $(BUILDDIR)/kernel/kernel -s -S &
 	@sleep 1
 	@gdb -x ./qemu.dbg
 

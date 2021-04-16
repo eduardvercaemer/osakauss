@@ -20,7 +20,7 @@ timer_callback(struct regs *regs)
 extern void 
 timer_init(u32 frequency)
 {
-   install_handler(0, &timer_callback);
+   install_handler(32, &timer_callback);
    const u32 divisor = 1193180 / frequency;
    outb(0x43, 0x36);
    const u8 l = (u8)(divisor & 0xFF);

@@ -97,7 +97,7 @@ isr12:
   jmp isr_common_stub 
 isr13:
   cli                 
-  push byte 13
+  push byte 13        
   jmp isr_common_stub 
 isr14:
   cli                 
@@ -188,14 +188,11 @@ isr31:
   push byte 0         
   push byte 31         
   jmp isr_common_stub
-
-
 isr128:
   cli                 
   push byte 0         
-  push 128        
+  push byte 128     
   jmp isr_common_stub
-
 
 extern fault_handler
 
@@ -224,10 +221,7 @@ isr_common_stub:
     add esp, 8     
     iret
 
-
-
-
 idt_flush:
-    mov eax, [esp+4]  
-    lidt [eax]        
-    ret
+   mov eax, [esp+4]  
+   lidt [eax]        
+   ret

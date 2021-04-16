@@ -78,6 +78,8 @@ isr_init(void)
    idt_set_gate( 14, (u32)isr14 , 0x08, 0x8E);
    idt_set_gate( 15, (u32)isr15 , 0x08, 0x8E);
    idt_set_gate( 16, (u32)isr16 , 0x08, 0x8E);
+   idt_set_gate( 16, (u32)isr16 , 0x08, 0x8E);
+   idt_set_gate( 16, (u32)isr16 , 0x08, 0x8E);
    idt_set_gate( 17, (u32)isr17 , 0x08, 0x8E);
    idt_set_gate( 18, (u32)isr18 , 0x08, 0x8E);
    idt_set_gate( 19, (u32)isr19 , 0x08, 0x8E);

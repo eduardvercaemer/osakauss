@@ -75,30 +75,22 @@ extern void
 fault_handler(struct regs *r)
 {
     static char buf[33];
-    
-
 
     u8 int_no = r->int_no & 0xFF;
 
-    if (interrupt_handlers[int_no] != 0)
-    {
+    if (interrupt_handlers[int_no] != 0) {
         void (*handler)(struct regs *r);
         handler = interrupt_handlers[int_no];
         handler(&r);
-    }
-    else{
+    } else {
         if (r->int_no < 32) {
-
             logf("fault: %s\nhalting system\n", exception_messages[r->int_no]);
             for (;;);
-        }
-        else{
+        } else {
             logf("Unknown interrupt\nfault number: %s\nhalting system\n", itoa(r->int_no,buf,10));
             for (;;);
         }
     }
-
-
 }
 
 
@@ -169,13 +161,11 @@ irq_handler(struct regs *r)
 {
     void (*handler)(struct regs *r);
     handler = interrupt_handlers[r->int_no];
-    if (handler)
-    {
+    if (handler) {
         handler(r);
     }
 
-    if (r->int_no >= 40)
-    {
+    if (r->int_no >= 40) {
         outb(0xA0, 0x20);
     }
     outb(0x20, 0x20);
