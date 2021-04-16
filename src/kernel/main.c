@@ -1,7 +1,6 @@
 #include <kernel/log.h>
-#include <kernel/console.h>
-#include <kernel/serial.h>
 #include <kernel/paging.h>
+#include <kernel/phys.h>
 #include <kernel/GDT.h>
 #include <kernel/IDT.h>
 #include <kernel/ISR.h>
@@ -9,7 +8,9 @@
 
 const u32 magic = 0xdeadbeef;
 
-void main() {
+static void
+init(void)
+{
 	require_log(LOG_SERIAL);
 	logf("   ...:::   asokauss v0.0.0  :::...\n\n");
 	
@@ -19,15 +20,34 @@ void main() {
 	isr_init();
 	irq_init();
 	
-	paging_init();
+	paging_init();  // this identity-maps the early kernel (i.e. 0 -> physmem_base will be mapped)
+	physmem_init();
+}
+
+void main() {
+	trace = false;
+	init();
+	trace = true;
+	tracef("init successful !\n", NULL);
 	
-	logf("this is a message after setting up paging !\n\n");
+	tracef("testing physmem allocation\n", NULL);
+	u32* paddr1 = physmem_alloc();
+	u32* paddr2 = physmem_alloc();
+	u32* paddr3 = physmem_alloc();
+	tracef("> paddr1 [%p]\n", paddr1);
+	tracef("> paddr2 [%p]\n", paddr2);
+	tracef("> paddr3 [%p]\n", paddr3);
+	physmem_free(paddr2);
+	physmem_free(paddr1);
+	paddr2 = physmem_alloc();
+	paddr1 = physmem_alloc();
+	tracef("> paddr1 [%p]\n", paddr1);
+	tracef("> paddr2 [%p]\n", paddr2);
+	tracef("> paddr3 [%p]\n", paddr3);
 	
-	// test kmalloc
-	u32 *p = kmalloc(16);
 	
-	// trigger page fault
-	u32 *ptr = (u32*)0xa0000000;
+	tracef("testing page faults\n", NULL);
+	u32 * ptr = (u32*)0xa0000000;
 	u32 tmp;
 	logf("reading from [%p]\n", 0xa0000000);
 	tmp = *ptr;

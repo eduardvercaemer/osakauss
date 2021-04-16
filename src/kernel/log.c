@@ -11,6 +11,8 @@ static struct {
 
 /* exports */
 
+bool trace = false;
+
 extern u8
 require_log(enum logging_output output)
 {

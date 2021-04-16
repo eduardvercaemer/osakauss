@@ -45,11 +45,9 @@ extern void paging_init(void);
 extern void paging_switch_dir(struct page_d *dir);
 
 /*
- * Get a pointer to the page entry that maps the given vaddr given,
- * if the table for this entry is missing, and we set make, this
- * will create the needed table for the page
+ * map the kernel vaddr to the specified paddr
  */
-extern struct page *paging_get_page(usize address, bool make, struct page_d *dir);
+extern void paging_kmap(u32 paddr, u32 vaddr);
 
 /*
  * Handler for page faults.

@@ -1,71 +1,64 @@
 #include <kernel/log.h>
-#include <kernel/heap.h>
+#include <kernel/paging.h>
 #include <x86.h>
-#include "phys.h"
 #include "frames.h"
 
 // 8M of phys mem
 #define FRAME_COUNT 0x800
 
-// begin address of the phys. memory we manage
-static u32 physmem_base;
 // the frame bitmap for the physical memory
-static struct frame_bitmap *frames;
-// are we ready ?
-bool physmem_ready = false;
+static struct frame_bitmap frames;
 
 /* linker */
 extern u32 end;
-u32 placement_address = (u32) &end;
 
 /* exports */
+
+u32 physmem_base = (u32) &end;
 
 extern void
 physmem_init(void)
 {
-	tracef("setting up %d frames\n", FRAME_COUNT);
+	tracef("setting up the physmem manager\n", NULL);
 	
 	// create the frame map
-	frames = frame_new(FRAME_COUNT);
-	//tracef("> frame map at [%p]\n", frames->frames);
-	//tracef("> frame count %d\n", frames->nframes);
-}
+	tracef("> allocating the bitmap at [%p]\n", physmem_base);
+	frames.frames = (u32*) physmem_base;
+	paging_kmap(physmem_base, physmem_base);
+	physmem_base += FRAME_COUNT / 32;
+	tracef("> for %d frames\n", FRAME_COUNT);
+	frames.nframes = FRAME_COUNT;
 
-extern void
-physmem_start(void)
-{
-	// align placement address
-	if (placement_address & 0xfff) placement_address += 0x1000;
-	placement_address &= 0xfffff000;
-	physmem_base = placement_address;
-	physmem_ready = true;
-	
-	tracef("physmem at [%p]\n", physmem_base);
+	// align base
+	tracef("> aligning physmem_base\n", NULL);
+	if (physmem_base & 0xfff) physmem_base += 0x1000;
+	physmem_base &= 0xfffff000;
+	tracef("> final physmem_base at [%p]\n", physmem_base);
 }
 
 extern u32
 physmem_alloc(void)
 {
-	u32 frame = frame_first(frames);
+	u32 frame = frame_first(&frames);
 	if (frame == FRAME_COUNT) {
 		tracef("out of frames !\n", NULL);
 		hang();
 	}
-	frame_set(frames, frame);
+	frame_set(&frames, frame);
 	u32 paddr = physmem_base + frame * 0x1000;
-	//tracef("frame [%d] paddr [%p]\n", frame, paddr);
+	tracef("frame [%d] paddr [%p]\n", frame, paddr);
 	return paddr;
 }
 
 extern void
 physmem_free(u32 paddr)
 {
-	//tracef("freeing paddr [%p]\n", paddr);
+	tracef("freeing paddr [%p]\n", paddr);
 	u32 frame = (paddr - physmem_base) / 0x1000;
-	if (!frame_test(frames, frame)) {
-		//tracef("> double free !", NULL);
+	if (!frame_test(&frames, frame)) {
+		tracef("> double free !", NULL);
 		return;
 	}
-	frame_clear(frames, frame);
-	//tracef("> done\n", NULL);
+	frame_clear(&frames, frame);
+	tracef("> done\n", NULL);
 }

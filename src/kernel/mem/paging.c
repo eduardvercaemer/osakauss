@@ -1,15 +1,15 @@
-#include <kernel/heap.h>
+#include <kernel/phys.h>
 #include <kernel/paging.h>
 #include <kernel/log.h>
 #include <stdlib.h>
 #include <x86.h>
-#include "phys.h"
 
 static struct page_d *kernel_directory = NULL;
 static struct page_d *current_directory = NULL;
 
 /* static methods */
 
+// given a page entry, make it point to the given physical frame
 static void
 map_page(struct page *page, u32 frame, bool is_kernel, bool is_writeable)
 {
@@ -19,44 +19,48 @@ map_page(struct page *page, u32 frame, bool is_kernel, bool is_writeable)
 	page->frame   = frame;
 }
 
-
-// Performs the identiy mapping of the current kernel image
-static struct page_d *
-create_identity_dir(void)
-{
-	tracef("creating kernel identity-map\n", NULL);
-	//tracef("> allocating page directory\n", NULL);
-	struct page_d *dir = (struct page_d *) kmalloc_a(sizeof *dir);
-	memset(dir, 0, sizeof *dir);
-	//tracef("> building dir in [%p]\n", dir);
-	
-	u32 addr = 0;
-	while (addr < placement_address) {
-		//tracef("> mapping [%p]\n", addr);
-		map_page(paging_get_page(addr, 1, dir), addr/0x1000, 1, 1);
-		addr += 0x1000;
-	}
-	//tracef("> mapped %d frames; [%p] -> [%p]\n", addr/0x1000, 0, addr - 1);
-	
-	return dir;
-}
-
 /* exports */
 
 extern void
 paging_init(void)
 {
-	// create the physmem manager
-	physmem_init();
-	
 	tracef("setting up kernel paging\n", NULL);
-	kernel_directory = create_identity_dir();
-	// !! no more kmalloc until heap is setup !!
 	
-	physmem_start();
+	tracef("> aligning physmem_base\n", NULL);
+	if (physmem_base & 0xfff) physmem_base += 0x1000;
+	physmem_base &= 0xfffff000;
+	
+	tracef("> allocating kernel directory at [%p]\n", physmem_base);
+	kernel_directory = (struct page_d *) physmem_base;
+	physmem_base += sizeof *kernel_directory;
+	memset(kernel_directory, 0, sizeof *kernel_directory);
+	
+	tracef("> aligning physmem_base\n", NULL);
+	if (physmem_base & 0xfff) physmem_base += 0x1000;
+	physmem_base &= 0xfffff000;
+	
+	tracef("> building kernel directory\n", NULL);
+	u32 addr = 0;
+	while (addr < physmem_base) { // identity map early kernel
+		u32 page_idx  = (addr / 0x1000) % 1024;
+		u32 table_idx = (addr / 0x1000) / 1024;
+		struct page_t *table = kernel_directory->tables[table_idx];
+		if (!table) {
+			tracef("> allocating page table index %d at [%p]\n", table_idx, physmem_base);
+			table = (struct page_t *) physmem_base;
+			kernel_directory->tables[table_idx] = table;
+			kernel_directory->tables_phys[table_idx] = physmem_base | 0x7;
+			memset(table, 0, 0x1000);
+			physmem_base += 0x1000;
+		}
+		struct page *page = &table->pages[page_idx];
+		tracef("> mapping [%p]\n", addr);
+		map_page(page, addr/0x1000, 1, 1);
+		addr += 0x1000;
+	}
 	
 	// Now, enable paging!
-	tracef("enabling paging\n", NULL);
+	tracef("> enabling paging\n", NULL);
 	paging_switch_dir(kernel_directory);
 }
 
@@ -72,38 +76,28 @@ paging_switch_dir(struct page_d *dir)
 	asm volatile("mov %0, %%cr0":: "r"(cr0));
 }
 
-extern struct page *
-paging_get_page(usize address, bool make, struct page_d *dir)
+extern void
+paging_kmap(u32 paddr, u32 vaddr)
 {
-	//tracef("vaddr [%p] from dir [%p] %s\n",
-	//	address,
-	//	dir,
-	//	make ? "(make)" : "");
-	// Turn the address into an index.
-	address /= 0x1000;
-	// Find the page table containing this address.
-	u32 table_idx = address / 1024;
-	//tracef("> table %d\n", table_idx);
+	tracef("paddr [%p] vaddr [%p]\n", paddr, vaddr);
 	
-	if (dir->tables[table_idx]) {
-		struct page *p = &dir->tables[table_idx]->pages[address%1024];
-		//tracef("> page entry at [%p]\n", p);
-		return p;
-	} else if (make) {
-		u32 tmp;
-		dir->tables[table_idx] = (struct page_t*) kmalloc_ap(sizeof(struct page_t), &tmp);
-		//tracef("> made table vaddr [%p] paddr [%p]\n",
-		//  dir->tables[table_idx],
-		//  tmp);
-		memset(dir->tables[table_idx], 0, 0x1000);
-		dir->tables_phys[table_idx] = tmp | 0x7; // PRESENT, RW, US.
-		struct page *p = &dir->tables[table_idx]->pages[address%1024];
-		//tracef("> page entry at [%p]\n", p);
-		return p;
-	} else {
-		tracef("> missing table, not making it !\n", NULL);
-		return 0;
+	u32 page_idx  = (vaddr / 0x1000) % 1024;
+	u32 table_idx = (vaddr / 0x1000) / 1024;
+	tracef("> on table %d\n", table_idx);
+	tracef("> on index %d\n", page_idx);
+	
+	struct page_t *table = kernel_directory->tables[table_idx];
+	if (!table) {
+		table = (struct page_t *) physmem_alloc();
+		tracef("> allocating new page table at [%p]\n", table);
+		kernel_directory->tables[table_idx] = table;
+		kernel_directory->tables_phys[table_idx] = ((u32) table) | 0x7;
+		memset(table, 0, 0x1000);
 	}
+	
+	struct page *page = &table->pages[page_idx];
+	map_page(page, paddr/0x1000, 1, 1);
+	tracef("> mapping on page at [%p]\n", page);
 }
 
 extern void

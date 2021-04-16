@@ -4,6 +4,7 @@
  */
 #include <kernel/ISR.h>
 #include <kernel/log.h>
+#include <kernel/paging.h>
 
 static const char *exception_messages[] = {
     "Division by zero", // 0
