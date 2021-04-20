@@ -75,6 +75,10 @@ void main() {
 	tracef("testing audio\n", NULL);
 	beep(100, 10);
 	
+	tracef("testing syscalls\n",NULL);
+	tracef("> syscall output ",NULL);
+	syscall_log_best_number_ever();
+
 	tracef("testing page faults\n", NULL);
 	u32 * ptr = (u32*)0xa0000000;
 	u32 tmp;
