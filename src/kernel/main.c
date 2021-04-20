@@ -18,7 +18,7 @@ static void
 init(void)
 {
 	require_log(LOG_SERIAL);
-	logf("   ...:::   asokauss v0.0.0  :::...\n\n");
+	logf("   ...:::   osakauss v0.0.0  :::...\n\n");
 	
 	// todo, move all these into descriptors_init or similar
 	gdt_init();
