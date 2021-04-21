@@ -76,7 +76,7 @@ void main() {
 	beep(100, 10);
 	
 	tracef("testing syscalls\n",NULL);
-	tracef("> syscall output ",NULL);
+	tracef("> syscall output: ",NULL);
 	syscall_log_best_number_ever();
 
 	tracef("testing page faults\n", NULL);
