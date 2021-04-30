@@ -39,7 +39,7 @@ init(void)
 }
 
 void main() {
-	trace = false;
+	trace = true;
 	init();
 	trace = true;
 	tracef("init successful !\n", NULL);
@@ -58,11 +58,7 @@ void main() {
 	tracef("> paddr1 [%p]\n", paddr1);
 	tracef("> paddr2 [%p]\n", paddr2);
 	tracef("> paddr3 [%p]\n", paddr3);
-	
-	tracef("testing heap table\n", NULL);
-	u32 heap_test = *((u32*)0x80000000);
-	tracef("> test %x\n", heap_test);
-	
+		
 	tracef("testing heap\n", NULL);
 	u32 *heap1 = (u32 *) kmalloc(16);
 	u32 *heap2 = (u32 *) kmalloc(16);

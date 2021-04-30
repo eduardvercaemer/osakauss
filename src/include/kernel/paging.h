@@ -28,8 +28,6 @@ struct page_t { // 1024 * u32 = 0x1000 = a page
  */
 struct page_d {
 	struct page_t *tables[1024];
-	u32 tables_phys[1024];
-	u32 phys;
 };
 
 /* kernel/mem/paging.c */
@@ -38,11 +36,6 @@ struct page_d {
  * Setups the kernel directory, the physical memory allocator, the heap, and enables paging
  */
 extern void paging_init(void);
-
-/*
- * Load the given page directory
- */
-extern void paging_switch_dir(struct page_d *dir);
 
 /*
  * map the kernel vaddr to the specified paddr
@@ -55,6 +48,6 @@ extern void paging_kmap(u32 paddr, u32 vaddr);
 extern void paging_page_fault(struct regs *r);
 
 /*
- * TODO: dump the current status of a page directory
+ * Create a verbose dump of the current state of a paging directory.
  */
-extern void paging_dump_directory(const struct page_d *dir);
+extern void paging_dump_directory(struct page_d *dir);

@@ -6,8 +6,14 @@
 #include <stdlib.h>
 #include <x86.h>
 
-static struct page_d *kernel_directory = NULL;
+static struct page_t *table_map         = (struct page_t *) 0x40000000; // all our kernel tables at table 512
+static struct page_d *kernel_directory  = (struct page_d *) 0x40400000; // kernel directory at table 513
+static u32 kernel_paddr                 = 0x00000000;					// kernel directory physmem base
 static struct page_d *current_directory = NULL;
+static bool paging_enabled = false;
+
+/* linker */
+extern u32 end;
 
 /* static methods */
 
@@ -21,108 +27,116 @@ map_page(struct page *page, u32 frame, bool is_kernel, bool is_writeable)
 	page->frame   = frame;
 }
 
-/* exports */
-
-extern void
-paging_init(void)
+// create a kernel memory mapping
+static inline void
+dir_map_page(struct page_d *dir, u32 paddr, u32 vaddr)
 {
-	tracef("setting up kernel paging\n", NULL);
+	struct page_t *table, *table_paddr, *table_vaddr;
+	struct page   *page;
 	
-	tracef("> aligning physmem_base\n", NULL);
-	if (physmem_base & 0xfff) physmem_base += 0x1000;
-	physmem_base &= 0xfffff000;
+	tracef("mapping [%p] to [%p]\n", vaddr, paddr);
+	u32 page_idx  = (vaddr / 0x1000) % 1024;
+	u32 table_idx = (vaddr / 0x1000) / 1024;
+	tracef("> page %d\n", page_idx);
+	tracef("> table %d\n", table_idx);
 	
-	tracef("> allocating kernel directory at [%p]\n", physmem_base);
-	kernel_directory = (struct page_d *) physmem_base;
-	physmem_base += sizeof *kernel_directory;
-	memset(kernel_directory, 0, sizeof *kernel_directory);
-	
-	tracef("> aligning physmem_base\n", NULL);
-	if (physmem_base & 0xfff) physmem_base += 0x1000;
-	physmem_base &= 0xfffff000;
-	
-	tracef("> building kernel directory\n", NULL);
-	u32 addr = 0;
-	while (addr < physmem_base) { // identity map early kernel
-		u32 page_idx  = (addr / 0x1000) % 1024;
-		u32 table_idx = (addr / 0x1000) / 1024;
-		struct page_t *table = kernel_directory->tables[table_idx];
-		if (!table) {
-			tracef("> allocating page table index %d at [%p]\n", table_idx, physmem_base);
-			table = (struct page_t *) physmem_base;
-			kernel_directory->tables[table_idx] = table;
-			kernel_directory->tables_phys[table_idx] = physmem_base | 0x7;
-			memset(table, 0, 0x1000);
-			physmem_base += 0x1000;
+	// create if table not present
+	if (!((u32)dir->tables[table_idx] & 1)) {		
+		tracef("> allocating table %d\n", table_idx);
+		table_paddr = (struct page_t *) physmem_alloc();
+		// this makes so table 0 is at the first page of the table_map,
+		// table 512 at the middle, etc.
+		table_vaddr = &table_map[table_idx];
+		tracef("> > paddr [%p]\n", table_paddr);
+		tracef("> > vaddr [%p]\n", table_vaddr);
+		
+		// create the PDE (user rw present)
+		dir->tables[table_idx] = (struct page_t *) ((u32) table_paddr | 0x7);
+		
+		if (paging_enabled) {
+			table = table_vaddr;
+		} else {
+			table = table_paddr;
 		}
-		struct page *page = &table->pages[page_idx];
-		tracef("> mapping [%p]\n", addr);
-		map_page(page, addr/0x1000, 1, 1);
-		addr += 0x1000;
+		
+		// we also need to map this table
+		dir_map_page(dir, table_paddr, table_vaddr);
+	} else if (paging_enabled) {
+		table = &table_map[table_idx];
+	} else {
+		table = (struct page_t *)((u32)dir->tables[table_idx] & 0xfffff000);
 	}
 	
-	tracef("> creating heap table for [%p] at [%p]\n", heap_base, physmem_base);
-	u32 page_idx  = (heap_base / 0x1000) % 1024;
-	u32 table_idx = (heap_base / 0x1000) / 1024;
-	struct page_t *table = kernel_directory->tables[table_idx];
-	if (!table) {
-		tracef("> allocating page table index %d at [%p]\n", table_idx, physmem_base);
-		table = (struct page_t *) physmem_base;
-		physmem_base += 0x1000;
-		memset(table, 0, 0x1000);
-		kernel_directory->tables[table_idx] = (struct page_t *) heap_base;
-		kernel_directory->tables_phys[table_idx] = (u32) table | 0x7;
-	}
-	struct page *page = (struct page *) &table->pages[page_idx];
-	map_page(page, (u32)table/0x1000, 1, 1);
-	heap_base += 0x1000;
-	
-	tracef("> installing page fault handler\n", NULL);
-	install_handler(14, paging_page_fault);
-	
-	// Now, enable paging!
-	tracef("> enabling paging\n", NULL);
-	paging_switch_dir(kernel_directory);
+	tracef("> table on [%p]\n", table);
+	page = &table->pages[page_idx];
+	tracef("> page on [%p]\n", page);
+	tracef("> maps to frame %x\n", paddr / 0x1000);
+	map_page(page, paddr / 0x1000, 1, 1);
 }
 
-extern void
-paging_switch_dir(struct page_d *dir)
+
+/*
+ * given the paddr of a paging directory, enable it
+ */
+static void
+paging_switch_dir_paddr(u32 dir_paddr)
 {
-	tracef("directory [%p]\n", dir);
-	current_directory = dir;
-	asm volatile("mov %0, %%cr3":: "r"(&dir->tables_phys));
+	tracef("directory [%p]\n", dir_paddr);
+	current_directory = dir_paddr;
+	asm volatile("mov %0, %%cr3":: "r"(dir_paddr));
 	u32 cr0;
 	asm volatile("mov %%cr0, %0": "=r"(cr0));
 	cr0 |= 0x80000000; // Enable paging!
 	asm volatile("mov %0, %%cr0":: "r"(cr0));
 }
 
+/* exports */
+
+extern void
+paging_init(void)
+{
+	struct page_d *dir;
+	
+	tracef("setting up kernel paging\n", NULL);
+	
+	tracef("allocating kernel directory\n", NULL);
+	kernel_paddr = physmem_alloc();
+	dir = (struct page_d *) kernel_paddr; // we use the paddr since paging isn't on yet
+	tracef("> > paddr [%p]\n", kernel_paddr);
+	tracef("> > vaddr [%p]\n", kernel_directory);
+	
+	u32 kernel_frames = 1 + (u32)&end / 0x1000;
+	tracef("> mapping %d kernel frames\n", kernel_frames);
+	for (u32 frame = 0; frame < kernel_frames; frame++) {
+		dir_map_page(dir, frame * 0x1000, frame * 0x1000);
+	}
+
+	tracef("> mapping kernel directory at [%p]\n", kernel_directory);
+	dir_map_page(dir, dir, kernel_directory);
+	
+	//dump_directory(dir);
+	//asm volatile("int $3");
+	
+	tracef("> installing page fault handler\n", NULL);
+	install_handler(14, paging_page_fault);
+	
+	// Now, enable paging!
+	tracef("> enabling paging\n", NULL);
+	paging_switch_dir_paddr(kernel_paddr);
+	paging_enabled = true;
+}
+
+
+
+/*
+ * used to map kernel pages, once paging is enabled
+ */
 extern void
 paging_kmap(u32 paddr, u32 vaddr)
 {
 	tracef("paddr [%p] vaddr [%p]\n", paddr, vaddr);
 	
-	u32 page_idx  = (vaddr / 0x1000) % 1024;
-	u32 table_idx = (vaddr / 0x1000) / 1024;
-	tracef("> on table %d\n", table_idx);
-	tracef("> on index %d\n", page_idx);
-	
-	struct page_t *table = kernel_directory->tables[table_idx];
-	tracef("> table at [%p]\n", table);
-	if (!table) {
-		u32 table_paddr = physmem_alloc();
-		table = (struct page_t *) kmalloc_a(0x1000);
-		memset(table, 0, 0x1000);
-		tracef("> allocating new page table at [%p]\n", table);
-		kernel_directory->tables[table_idx] = table;
-		kernel_directory->tables_phys[table_idx] = ((u32) table_paddr) | 0x7;
-		struct page *page = (struct page *) &table->pages[page_idx];
-		map_page(page, (u32)table/0x1000, 1, 1);
-	}
-	
-	struct page *page = &table->pages[page_idx];
-	map_page(page, paddr/0x1000, 1, 1);
-	tracef("> mapping on page at [%p]\n", page);
+	dir_map_page(kernel_directory, paddr, vaddr);
 }
 
 extern void
@@ -152,4 +166,48 @@ paging_page_fault(struct regs *r)
 	// handle fault
 	tracef("> halting\n", NULL);
 	hang();
+}
+
+extern void
+paging_dump_directory(struct page_d *dir)
+{
+	tracef("\n\n     START OF DIRECTORY DUMP\n\n", NULL);
+	tracef("> paging enabled ? (%s)\n",
+		paging_enabled ? "Y" : "N");
+	
+	for (u32 table_idx = 0; table_idx < 1024; table_idx++) {
+		struct page_t *table_paddr, *table_vaddr, *table;
+		table_paddr = (struct page_t *) ((u32)dir->tables[table_idx] & 0xfffff000);
+		table_vaddr = &table_map[table_idx];
+		if (table_paddr == NULL) continue;
+		
+		tracef(
+			"----- t%d v[%p] p[%p]\n",
+			table_idx,
+			table_vaddr,
+			table_paddr);
+		if (paging_enabled) {
+			table = table_vaddr;
+		} else {
+			table = table_paddr;
+		}
+		tracef("> addressing with [%p]\n", table);
+		
+		tracef("> mappings:\n", NULL);
+		for (u32 page_idx = 0; page_idx < 1024; page_idx++) {
+			struct page *page;
+			page = &table->pages[page_idx];
+
+			tracef("  - p%d [%p] %s%s%s%s%smaps v[%p] to p[%p]\n",
+				page_idx,
+				page,
+				page->present ? "(p) " : "(np) ",
+				page->rw ? "(rw) " : "(r) ",
+				page->user ? "(user) " : "",
+				page->accessed ? "(accessed) " : "",
+				page->dirty ? "(dirty) " : "",
+				table_idx * 0x1000 * 1024 + page_idx * 0x1000,
+				page->frame * 0x1000);
+		}
+	}
 }

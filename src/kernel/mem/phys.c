@@ -8,6 +8,8 @@
 
 // the frame bitmap for the physical memory
 static struct frame_bitmap frames;
+// wether the allocator is setup already
+static bool physmem_ready = false;
 
 /* linker */
 extern u32 end;
@@ -34,11 +36,22 @@ physmem_init(void)
 	if (physmem_base & 0xfff) physmem_base += 0x1000;
 	physmem_base &= 0xfffff000;
 	tracef("> final physmem_base at [%p]\n", physmem_base);
+
+	physmem_ready = true;
 }
 
 extern u32
 physmem_alloc(void)
 {
+	// early allocation
+	if (!physmem_ready) {
+		if (physmem_base & 0xfff) physmem_base += 0x1000;
+		physmem_base &= 0xfffff000;
+		u32 ret = physmem_base;
+		physmem_base += 0x1000;
+		return ret;
+	}
+
 	u32 frame = frame_first(&frames);
 	if (frame == FRAME_COUNT) {
 		tracef("out of frames !\n", NULL);
