@@ -43,7 +43,7 @@ physmem_init(void)
 extern u32
 physmem_alloc(void)
 {
-	// early allocation
+	// early allocation, not free-able
 	if (!physmem_ready) {
 		if (physmem_base & 0xfff) physmem_base += 0x1000;
 		physmem_base &= 0xfffff000;
@@ -52,6 +52,7 @@ physmem_alloc(void)
 		return ret;
 	}
 
+	// regular allocations
 	u32 frame = frame_first(&frames);
 	if (frame == FRAME_COUNT) {
 		tracef("out of frames !\n", NULL);

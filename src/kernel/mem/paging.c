@@ -27,9 +27,28 @@ map_page(struct page *page, u32 frame, bool is_kernel, bool is_writeable)
 	page->frame   = frame;
 }
 
-// create a kernel memory mapping
-static inline void
-dir_map_page(struct page_d *dir, u32 paddr, u32 vaddr)
+/*
+ * given the paddr of a paging directory, enable it
+ */
+static void
+paging_switch_dir_paddr(u32 dir_paddr)
+{
+	tracef("directory [%p]\n", dir_paddr);
+	current_directory = dir_paddr;
+	asm volatile("mov %0, %%cr3":: "r"(dir_paddr));
+	u32 cr0;
+	asm volatile("mov %%cr0, %0": "=r"(cr0));
+	cr0 |= 0x80000000; // Enable paging!
+	asm volatile("mov %0, %%cr0":: "r"(cr0));
+}
+
+/*
+ * Use the kernel paging structure to create a new mapping.
+ * - Tables live at 0x40000000
+ * - Directory lives at 0x40400000
+ */
+static void
+kernel_map_page(struct page_d *dir, u32 paddr, u32 vaddr)
 {
 	struct page_t *table, *table_paddr, *table_vaddr;
 	struct page   *page;
@@ -60,7 +79,7 @@ dir_map_page(struct page_d *dir, u32 paddr, u32 vaddr)
 		}
 		
 		// we also need to map this table
-		dir_map_page(dir, table_paddr, table_vaddr);
+		kernel_map_page(dir, table_paddr, table_vaddr);
 	} else if (paging_enabled) {
 		table = &table_map[table_idx];
 	} else {
@@ -72,22 +91,7 @@ dir_map_page(struct page_d *dir, u32 paddr, u32 vaddr)
 	tracef("> page on [%p]\n", page);
 	tracef("> maps to frame %x\n", paddr / 0x1000);
 	map_page(page, paddr / 0x1000, 1, 1);
-}
 
-
-/*
- * given the paddr of a paging directory, enable it
- */
-static void
-paging_switch_dir_paddr(u32 dir_paddr)
-{
-	tracef("directory [%p]\n", dir_paddr);
-	current_directory = dir_paddr;
-	asm volatile("mov %0, %%cr3":: "r"(dir_paddr));
-	u32 cr0;
-	asm volatile("mov %%cr0, %0": "=r"(cr0));
-	cr0 |= 0x80000000; // Enable paging!
-	asm volatile("mov %0, %%cr0":: "r"(cr0));
 }
 
 /* exports */
@@ -108,11 +112,11 @@ paging_init(void)
 	u32 kernel_frames = 1 + (u32)&end / 0x1000;
 	tracef("> mapping %d kernel frames\n", kernel_frames);
 	for (u32 frame = 0; frame < kernel_frames; frame++) {
-		dir_map_page(dir, frame * 0x1000, frame * 0x1000);
+		kernel_map_page(dir, frame * 0x1000, frame * 0x1000);
 	}
 
 	tracef("> mapping kernel directory at [%p]\n", kernel_directory);
-	dir_map_page(dir, dir, kernel_directory);
+	kernel_map_page(dir, dir, kernel_directory);
 	
 	//dump_directory(dir);
 	//asm volatile("int $3");
@@ -126,17 +130,21 @@ paging_init(void)
 	paging_enabled = true;
 }
 
-
-
 /*
  * used to map kernel pages, once paging is enabled
  */
 extern void
 paging_kmap(u32 paddr, u32 vaddr)
 {
-	tracef("paddr [%p] vaddr [%p]\n", paddr, vaddr);
-	
-	dir_map_page(kernel_directory, paddr, vaddr);
+	struct page_d *dir;
+
+	if (paging_enabled) {
+		dir = kernel_directory;
+	} else {
+		dir = kernel_paddr;
+	}
+
+	kernel_map_page(dir, paddr, vaddr);
 }
 
 extern void

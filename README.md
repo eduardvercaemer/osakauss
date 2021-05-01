@@ -15,3 +15,22 @@ our super awesome kernel and user space system
 
 - After initializing paging, the physical memory bookkeper keeps track of the free
   memory after the 'placement' allocator.
+
+### Boot process
+
+- paging init
+  - physmem alloc's
+    - pre physmem init
+    - early allocs
+    - non free-able
+  - kernel map page
+    - more physmem alloc's
+  - switch dir
+- physmem init
+  - reserves more phys memory (identity mapped)
+  - sets physmem ready
+  - at this point, physmem allocs are free-able
+- heap init
+  - todo
+- syscall init
+  - broken
