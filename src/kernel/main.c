@@ -77,22 +77,16 @@ void main() {
 	tracef("> waited 100 ticks\n", NULL);
 	
 	tracef("testing audio\n", NULL);
-	//beep(100, 10);
+	beep(100, 10);
 	
 	tracef("testing syscalls\n",NULL);
 	tracef("> syscall output: ",NULL);
 	syscall_log_best_number_ever();
 
 	tracef("Press any key\n",NULL);
-	char *x2;
-	char *x1;
-	input_read(&x2,1);
-	//serial_read(x1,1);
-	//logf("press serial: %s\n",&x1);
-	logf("\npress: %s\n",&x2);
-	
-	
-/*
+	char *key;
+	input_read(&key,1);
+
 	tracef("testing page faults\n", NULL);
 	u32 * ptr = (u32*)0xa0000000;
 	u32 tmp;
@@ -104,7 +98,7 @@ void main() {
 	
 	// trigger breakpoint
 	asm volatile("int $0x03");
-*/
+
 	//loops forever
     for (;;);
 }
