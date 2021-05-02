@@ -77,7 +77,7 @@ void main() {
 	tracef("> waited 100 ticks\n", NULL);
 	
 	tracef("testing audio\n", NULL);
-	beep(100, 10);
+	//beep(100, 10); // breaks input later in code: need to fix
 	
 	tracef("testing syscalls\n",NULL);
 	tracef("> syscall output: ",NULL);
