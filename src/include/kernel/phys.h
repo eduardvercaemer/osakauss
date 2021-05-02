@@ -10,7 +10,12 @@
 extern u32 physmem_base;
 
 /*
- * initialize the physical memory bookkeeper, by creating its necessary resources
+ * Initialize the physical memory bookkeeper, by creating its necessary
+ * resources by stealing a chunk of the physmem.
+ *
+ * After a call to this method, physmem_base will be set to its _final_
+ * value, we need to identity map this chunk of memory, and any further
+ * needs for physical memory need to be satisfied via physmem_alloc
  */
 extern void physmem_init(void);
 

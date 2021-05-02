@@ -1,11 +1,14 @@
+#include <types.h>
 #include <kernel/heap.h>
 #include <kernel/log.h>
 #include <kernel/paging.h>
 #include <kernel/phys.h>
 
-/* exports */
+u32 heap_base = 0x80000000; // where the heap starts
+u32 heap_head = 0x80000000; // where the heap head currently is
+u32 heap_top  = 0x80000000; // where the mapped heap ends
 
-u32 heap_base = 0x80000000;
+/* exports */
 
 extern void
 heap_init(void)
@@ -34,16 +37,27 @@ kmalloc_ap(u32 sz, u32* phys)
 extern usize
 kmalloc__(u32 sz, bool align, u32 *phys)
 {
-	// for now kmaloc just allocates a whole page cause why not
-	u32 ret;
-	
-	tracef("request for %d bytes\n", sz);
-	
-	u32 paddr = physmem_alloc();
-	paging_kmap(paddr, heap_base);
-	ret = heap_base;
-	heap_base += 0x1000;
-	
-	tracef("> %p\n", ret);
+	usize ret;
+
+	if (align) {
+		if (heap_head & 0xfff) heap_head += 0x1000;
+		heap_head &= 0xfffff000;
+	}
+
+	ret = heap_head;
+	heap_head += sz;
+
+	while (heap_head > heap_top) {
+		u32 paddr = physmem_alloc();
+		paging_kmap(paddr, heap_top);
+		heap_top += 0x1000;
+	}
+
+	if (phys) {
+		u32 frame;
+		paging_vaddr_get_kmap(ret, &frame);
+		*phys = frame * 0x1000;
+	}
+
 	return ret;
 }

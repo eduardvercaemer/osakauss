@@ -38,9 +38,19 @@ struct page_d {
 extern void paging_init(void);
 
 /*
- * map the kernel vaddr to the specified paddr
+ * Get a pointer to the kernel memory directory.
+ */
+extern struct page_d *paging_get_kdir(void);
+
+/*
+ * Map the kernel vaddr to the specified paddr
  */
 extern void paging_kmap(u32 paddr, u32 vaddr);
+
+/*
+ * Check wether a vaddr is mapped in the kernel directory
+ */
+extern bool paging_vaddr_get_kmap(u32 vaddr, u32 *frame);
 
 /*
  * Handler for page faults.

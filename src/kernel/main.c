@@ -31,8 +31,27 @@ init(void)
 	enable_interrupts();
 	timer_init(100);
 	
-	paging_init();  // this identity-maps the early kernel (i.e. 0 -> physmem_base will be mapped)
-	physmem_init(); // at this point, we can use the physmem allocator (i.e. alloc, free)
+	/*
+	 * First step is to initialize the physmem bookkeeper. This uses a small
+	 * bitmap to keep track of physical frame usage.
+	 *
+	 * Gives access to:
+	 * - physmem_alloc
+	 * - physmem_free
+	 */
+	physmem_init();
+	/*
+	 * This allocates a paging directorry for kernel memory, and then proceeds
+	 * to identity map the early kernel (until the end symbol from the linker).
+	 *
+	 * The directory itself is mapped at 0x4040000. The paging tables reside in
+	 * the table starting at 0x40000000, so table 0 is 0x40000000, table 1 is
+	 * 0x4001000, etc.
+	 *
+	 * We then enable paging.
+	 */
+	paging_init();
+
 	heap_init();    // after this, and _only_ after this, we can use the usual kmalloc etc
 	syscall_init(); // broken
 	require_input(INPUT_BOTH);

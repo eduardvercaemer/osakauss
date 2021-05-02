@@ -3,8 +3,6 @@
 
 /* kernel/mem/heap.c */
 
-extern u32 heap_base;
-
 /*
  * you _must_ call this before any of the methods in here can
  * work properly

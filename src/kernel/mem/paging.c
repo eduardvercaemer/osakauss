@@ -130,6 +130,16 @@ paging_init(void)
 	paging_enabled = true;
 }
 
+extern struct page_d *
+paging_get_kdir(void)
+{
+	if (paging_enabled) {
+		return kernel_directory;
+	} else {
+		return kernel_paddr;
+	}
+}
+
 /*
  * used to map kernel pages, once paging is enabled
  */
@@ -145,6 +155,40 @@ paging_kmap(u32 paddr, u32 vaddr)
 	}
 
 	kernel_map_page(dir, paddr, vaddr);
+}
+
+extern bool
+paging_vaddr_get_kmap(u32 vaddr, u32 *frame)
+{
+	struct page_d *dir;
+	struct page_t *table;
+	struct page *page;
+
+	dir = paging_get_kdir();
+	u32 page_idx  = (vaddr / 0x1000) % 1024;
+	u32 table_idx = (vaddr / 0x1000) / 1024;
+
+	if(!((u32)dir->tables[table_idx] & 1)) {
+		return false;
+	}
+
+	// table present
+
+	if (paging_enabled) {
+		table = &table_map[table_idx];
+	} else {
+		table = (struct page_t *)((u32)dir->tables[table_idx] & 0xfffff000);
+	}
+
+	page = &table->pages[page_idx];
+
+	if (!page->present) {
+		return false;
+	}
+
+	// page present
+	*frame = page->frame;
+	return true;
 }
 
 extern void

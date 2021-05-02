@@ -1,5 +1,4 @@
 #include <kernel/log.h>
-#include <kernel/paging.h>
 #include <x86.h>
 #include "frames.h"
 
@@ -8,6 +7,7 @@
 
 // the frame bitmap for the physical memory
 static struct frame_bitmap frames;
+static u8 map_buffer[0x100];
 // wether the allocator is setup already
 static bool physmem_ready = false;
 
@@ -24,35 +24,21 @@ physmem_init(void)
 	tracef("setting up the physmem manager\n", NULL);
 	
 	// create the frame map
-	tracef("> allocating the bitmap at [%p]\n", physmem_base);
-	frames.frames = (u32*) physmem_base;
-	paging_kmap(physmem_base, physmem_base);
-	physmem_base += FRAME_COUNT / 32;
-	tracef("> for %d frames\n", FRAME_COUNT);
+	frames.frames = map_buffer;
 	frames.nframes = FRAME_COUNT;
+	tracef("> frame bitmap at [%p]\n", frames.frames)
+	tracef("> for %d frames\n", frames.nframes);
 
 	// align base
 	tracef("> aligning physmem_base\n", NULL);
 	if (physmem_base & 0xfff) physmem_base += 0x1000;
 	physmem_base &= 0xfffff000;
 	tracef("> final physmem_base at [%p]\n", physmem_base);
-
-	physmem_ready = true;
 }
 
 extern u32
 physmem_alloc(void)
 {
-	// early allocation, not free-able
-	if (!physmem_ready) {
-		if (physmem_base & 0xfff) physmem_base += 0x1000;
-		physmem_base &= 0xfffff000;
-		u32 ret = physmem_base;
-		physmem_base += 0x1000;
-		return ret;
-	}
-
-	// regular allocations
 	u32 frame = frame_first(&frames);
 	if (frame == FRAME_COUNT) {
 		tracef("out of frames !\n", NULL);
