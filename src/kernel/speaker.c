@@ -1,6 +1,18 @@
 #include <types.h>
 #include <x86.h>
 #include <kernel/timer.h>
+#include <kernel/serial.h>
+#include <lambda.h>
+
+static void
+fix_nosound_crap(const char *fmt, ...)
+{
+	va_list args;
+	va_start(args, fmt);
+	va_end(args);
+}
+
+
 
  //Play sound using built in speaker
 static void 
@@ -25,8 +37,8 @@ play_sound(u32 nFrequence) {
 static void 
 nosound() {
  	u8 tmp = inb(0x61) & 0xFC;
- 
- 	outb(0x61, tmp);
+	fix_nosound_crap("%s",&tmp); // temp fix
+ 	outb(0x61, (char)72);
  }
  
  //Make a beep

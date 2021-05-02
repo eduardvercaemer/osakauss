@@ -77,7 +77,7 @@ void main() {
 	tracef("> waited 100 ticks\n", NULL);
 	
 	tracef("testing audio\n", NULL);
-	//beep(100, 10); // breaks input later in code: need to fix
+	beep(1000,10);
 	
 	tracef("testing syscalls\n",NULL);
 	tracef("> syscall output: ",NULL);
@@ -86,6 +86,7 @@ void main() {
 	tracef("Press any key\n",NULL);
 	char *key;
 	input_read(&key,1);
+	logf("\n");	          
 
 	tracef("testing page faults\n", NULL);
 	u32 * ptr = (u32*)0xa0000000;
