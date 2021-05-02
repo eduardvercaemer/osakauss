@@ -1,6 +1,9 @@
 #include <x86.h>
 #include <kernel/serial.h>
-
+#include <kernel/ISR.h>
+#include <kernel/log.h>
+#include <stdlib.h>
+#include <kernel/input.h>
 #define PORT_COM1 0x03f8
 
 static u8 require_satisfied;
@@ -21,6 +24,30 @@ is_transmit_empty(void)
 	return inb(PORT_COM1 + 5) & 0x20;
 }
 
+extern void handle_serial_in(struct regs *r)
+{
+	char c = (char)serial_readb();
+	char x[33];
+	switch ((int) c)
+	{
+	case 13:
+		logf("\n");
+		break;
+	case 127:
+		logf("\b");
+		break;
+	default:
+		key_buffer_append(c);
+		logf("%s",&c);
+		break;
+	}
+	
+	
+
+
+}
+
+
 // return 0 on success, 1 on error
 static u8
 serial_init(void)
@@ -34,7 +61,7 @@ serial_init(void)
 	outb(PORT_COM1 + 4, 0x0b);    // IRQs enabled, RTS/DSR set
 	outb(PORT_COM1 + 4, 0x1e);    // Set in loopback mode, test the serial chip
 	outb(PORT_COM1 + 0, 0xae);    // Test serial chip (send byte 0xAE and check if serial returns same byte)
-	
+	outb(PORT_COM1 + 1, 0x01);    // Enable all interrupts
 	// Check if serial is faulty (i.e: not same byte as sent)
 	if(inb(PORT_COM1 + 0) != 0xae) {
 		return 1;
@@ -43,6 +70,7 @@ serial_init(void)
 	// If serial is not faulty set it in normal operation mode
 	// (not-loopback with IRQs enabled and OUT#1 and OUT#2 bits enabled)
 	outb(PORT_COM1 + 4, 0x0f);
+	install_handler(36, handle_serial_in); // 36 = IRQ 4. interrupt for serial port
 	return 0;
 }
 
@@ -58,7 +86,7 @@ require_serial(void)
 	return require_satisfied = 1;
 }
 
-extern char
+extern int
 serial_readb(void)
 {
 	while (serial_received() == 0) ;

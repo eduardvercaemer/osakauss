@@ -10,7 +10,7 @@ OBJCOPY = objcopy
 CFLAGS = -std=gnu99 -nostdlib -m32 -ffreestanding -fno-pie -fno-builtin -fno-stack-protector -I./src/include -g -O2 -Wall -Wextra
 LFLAGS = -m elf_i386
 ASFLAGS = -g -f elf32 -I./src/include/assembly
-QEMU_OPTIONS = -soundhw pcspk
+QEMU_OPTIONS = -soundhw pcspk -m 4096
 
 # --------------------------------------------------------------------------- #
 

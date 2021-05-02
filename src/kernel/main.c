@@ -11,13 +11,16 @@
 #include <kernel/timer.h>
 #include <x86.h>
 #include <kernel/syscall.h>
+#include <kernel/input.h>
 
 const u32 magic = 0xdeadbeef;
 
 static void
 init(void)
 {
-	require_log(LOG_SERIAL);
+	
+	require_log(LOG_BOTH);
+	
 	logf("   ...:::   osakauss v0.0.0  :::...\n\n");
 	
 	// todo, move all these into descriptors_init or similar
@@ -32,6 +35,7 @@ init(void)
 	physmem_init(); // at this point, we can use the physmem allocator (i.e. alloc, free)
 	heap_init();    // after this, and _only_ after this, we can use the usual kmalloc etc
 	syscall_init(); // broken
+	require_input(INPUT_BOTH);
 }
 
 void main() {
@@ -73,12 +77,22 @@ void main() {
 	tracef("> waited 100 ticks\n", NULL);
 	
 	tracef("testing audio\n", NULL);
-	beep(100, 10);
+	//beep(100, 10);
 	
 	tracef("testing syscalls\n",NULL);
 	tracef("> syscall output: ",NULL);
 	syscall_log_best_number_ever();
 
+	tracef("Press any key\n",NULL);
+	char *x2;
+	char *x1;
+	input_read(&x2,1);
+	//serial_read(x1,1);
+	//logf("press serial: %s\n",&x1);
+	logf("\npress: %s\n",&x2);
+	
+	
+/*
 	tracef("testing page faults\n", NULL);
 	u32 * ptr = (u32*)0xa0000000;
 	u32 tmp;
@@ -90,7 +104,7 @@ void main() {
 	
 	// trigger breakpoint
 	asm volatile("int $0x03");
- 
+*/
 	//loops forever
     for (;;);
 }

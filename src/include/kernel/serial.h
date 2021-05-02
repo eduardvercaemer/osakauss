@@ -14,7 +14,7 @@ extern u8 require_serial(void);
 /*
  * blocks until we can read a byte from serial
  */
-extern char serial_readb(void);
+extern int serial_readb(void);
 
 /*
  * blocks until we can send a byte through serial
