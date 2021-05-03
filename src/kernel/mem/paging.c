@@ -43,31 +43,39 @@ paging_switch_dir_paddr(u32 dir_paddr)
 }
 
 /*
- * Use the kernel paging structure to create a new mapping.
- * - Tables live at 0x40000000
- * - Directory lives at 0x40400000
+ * Get a usable pointer to the kernel paging directory.
  */
-static void
-kernel_map_page(struct page_d *dir, u32 paddr, u32 vaddr)
+static struct page_d *
+get_kdir(void)
 {
+	if (paging_enabled) {
+		return kernel_directory;
+	} else {
+		return kernel_paddr;
+	}
+}
+
+/*
+ * Get a usable pointer to the kernel paging table of a given vaddr.
+ * Optionally, create if doesn't exist.
+ */
+static struct page_t *
+get_ktable(u32 vaddr, bool create)
+{
+	struct page_d *dir;
 	struct page_t *table, *table_paddr, *table_vaddr;
-	struct page   *page;
-	
-	tracef("mapping [%p] to [%p]\n", vaddr, paddr);
-	u32 page_idx  = (vaddr / 0x1000) % 1024;
+
+	dir = get_kdir();
+
 	u32 table_idx = (vaddr / 0x1000) / 1024;
-	tracef("> page %d\n", page_idx);
-	tracef("> table %d\n", table_idx);
-	
-	// create if table not present
-	if (!((u32)dir->tables[table_idx] & 1)) {		
-		tracef("> allocating table %d\n", table_idx);
+
+	if (!((u32)dir->tables[table_idx] & 1)) {
+		if (!create) return NULL;
+
 		table_paddr = (struct page_t *) physmem_alloc();
 		// this makes so table 0 is at the first page of the table_map,
 		// table 512 at the middle, etc.
 		table_vaddr = &table_map[table_idx];
-		tracef("> > paddr [%p]\n", table_paddr);
-		tracef("> > vaddr [%p]\n", table_vaddr);
 		
 		// create the PDE (user rw present)
 		dir->tables[table_idx] = (struct page_t *) ((u32) table_paddr | 0x7);
@@ -79,19 +87,34 @@ kernel_map_page(struct page_d *dir, u32 paddr, u32 vaddr)
 		}
 		
 		// we also need to map this table
-		kernel_map_page(dir, table_paddr, table_vaddr);
-	} else if (paging_enabled) {
-		table = &table_map[table_idx];
-	} else {
-		table = (struct page_t *)((u32)dir->tables[table_idx] & 0xfffff000);
+		paging_kmap(table_paddr, table_vaddr);
+
+		return table;
 	}
 	
-	tracef("> table on [%p]\n", table);
-	page = &table->pages[page_idx];
-	tracef("> page on [%p]\n", page);
-	tracef("> maps to frame %x\n", paddr / 0x1000);
-	map_page(page, paddr / 0x1000, 1, 1);
+	if (paging_enabled) {
+		return &table_map[table_idx];
+	} else {
+		return (struct page_t *)((u32)dir->tables[table_idx] & 0xfffff000);
+	}
+}
 
+/*
+ * Get a usable pointer to the paging entry for a given vaddr in the kernel
+ * paging directory.
+ * Optionally, create table if not present.
+ */
+static struct page *
+get_kpage(u32 vaddr, bool create)
+{
+	struct page_t *table;
+
+	table = get_ktable(vaddr, create);
+
+	if (!table) return NULL;
+
+	u32 page_idx = (vaddr / 0x1000) % 1024;
+	return &table->pages[page_idx];
 }
 
 /* exports */
@@ -112,11 +135,11 @@ paging_init(void)
 	u32 kernel_frames = 1 + (u32)&end / 0x1000;
 	tracef("> mapping %d kernel frames\n", kernel_frames);
 	for (u32 frame = 0; frame < kernel_frames; frame++) {
-		kernel_map_page(dir, frame * 0x1000, frame * 0x1000);
+		paging_kmap(frame * 0x1000, frame * 0x1000);
 	}
 
 	tracef("> mapping kernel directory at [%p]\n", kernel_directory);
-	kernel_map_page(dir, dir, kernel_directory);
+	paging_kmap(dir, kernel_directory);
 	
 	//dump_directory(dir);
 	//asm volatile("int $3");
@@ -130,31 +153,33 @@ paging_init(void)
 	paging_enabled = true;
 }
 
-extern struct page_d *
-paging_get_kdir(void)
-{
-	if (paging_enabled) {
-		return kernel_directory;
-	} else {
-		return kernel_paddr;
-	}
-}
-
 /*
  * used to map kernel pages, once paging is enabled
  */
 extern void
 paging_kmap(u32 paddr, u32 vaddr)
 {
-	struct page_d *dir;
+	struct page *page;
 
-	if (paging_enabled) {
-		dir = kernel_directory;
-	} else {
-		dir = kernel_paddr;
+	page = get_kpage(vaddr, true);
+	map_page(page, paddr / 0x1000, 1, 1);
+}
+
+extern void
+paging_kdrop(u32 vaddr)
+{
+	struct page *page;
+
+	tracef("drop v[%p]\n", vaddr);
+	page = get_kpage(vaddr, false);
+	if (!page || !page->present) {
+		tracef("> warn: page not present\n", NULL);
+		return;
 	}
-
-	kernel_map_page(dir, paddr, vaddr);
+	u32 paddr = page->frame * 0x1000;
+	tracef("> unmapping p[%p]\n", paddr);
+	physmem_free(paddr);
+	page->present = 0;
 }
 
 extern bool
@@ -164,7 +189,7 @@ paging_vaddr_get_kmap(u32 vaddr, u32 *frame)
 	struct page_t *table;
 	struct page *page;
 
-	dir = paging_get_kdir();
+	dir = get_kdir();
 	u32 page_idx  = (vaddr / 0x1000) % 1024;
 	u32 table_idx = (vaddr / 0x1000) / 1024;
 

@@ -14,8 +14,8 @@
  * requesting the first_frame will yield the first page that is currently free
  */
 
-#define INDEX_FROM_BIT(a) (a/(8*4))
-#define OFFSET_FROM_BIT(a) (a%(8*4))
+#define INDEX_FROM_BIT(a) (a/8)
+#define OFFSET_FROM_BIT(a) (a%8)
 
 /* exports */
 
@@ -23,7 +23,7 @@
 extern void
 frame_set(struct frame_bitmap *map, u32 frame)
 {
-	u32 *frames = map->frames;
+	u8 *frames = map->frames;
 	
 	u32 idx = INDEX_FROM_BIT(frame);
 	u32 off = OFFSET_FROM_BIT(frame);
@@ -36,7 +36,7 @@ frame_set(struct frame_bitmap *map, u32 frame)
 extern void
 frame_clear(struct frame_bitmap *map, u32 frame)
 {
-	u32 *frames = map->frames;
+	u8 *frames = map->frames;
 	
 	u32 idx = INDEX_FROM_BIT(frame);
 	u32 off = OFFSET_FROM_BIT(frame);
@@ -49,35 +49,36 @@ frame_clear(struct frame_bitmap *map, u32 frame)
 extern bool
 frame_test(struct frame_bitmap *map, u32 frame)
 {
-	u32 *frames = map->frames;
+	u8 *frames = map->frames;
 	
 	u32 idx = INDEX_FROM_BIT(frame);
 	u32 off = OFFSET_FROM_BIT(frame);
+	tracef("test i[%d] o[%d]\n", idx, off);
 	bool ret = frames[idx] & (0x1 << off);
 	
 	//tracef("test [%d]: %s\n", frame, ret ? "set" : "clear");
 	
-	return ret;
+	return ret != 0;
 }
 
 // Find the first free frame.
 extern u32
 frame_first(struct frame_bitmap *map)
 {
-	u32 *frames = map->frames;
+	u8 *frames = map->frames;
 	u32 nframes = map->nframes;
 	
 	u32 i, j;
 	u32 frame;
 	for (i = 0; i < INDEX_FROM_BIT(nframes); i++) {
-		if (frames[i] == 0xffffffff) { // nothing free in here
+		if (frames[i] == 0xff) { // nothing free in here
 			continue;
 		}
 		
-		for (j = 0; j < 32; j++) {
-			u32 toTest = 0x1 << j;
+		for (j = 0; j < 8; j++) {
+			u8 toTest = 0x1 << j;
 			if ( !(frames[i] & toTest) ) {
-				frame = i*4*8+j;
+				frame = i*8+j;
 				goto done;
 			}
 		}
@@ -87,6 +88,5 @@ frame_first(struct frame_bitmap *map)
 	return map->nframes;
 	
 	done:
-	//logf("%s: empty frame at %d\n", __func__, frame);
 	return frame;
 }

@@ -1,12 +1,9 @@
 #pragma once
 
 struct frame_bitmap {
-	u32 *frames;
+	u8 *frames;
 	u32 nframes;
 };
-
-#define INDEX_FROM_BIT(a) (a/(8*4))
-#define OFFSET_FROM_BIT(a) (a%(8*4))
 
 // Set a bit in the frames bitset
 extern void

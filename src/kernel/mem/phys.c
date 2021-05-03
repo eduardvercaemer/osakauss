@@ -46,17 +46,18 @@ physmem_alloc(void)
 	}
 	frame_set(&frames, frame);
 	u32 paddr = physmem_base + frame * 0x1000;
-	tracef("frame [%d] paddr [%p]\n", frame, paddr);
+	tracef("frame [%d] p[%p]\n", frame, paddr);
 	return paddr;
 }
 
 extern void
 physmem_free(u32 paddr)
 {
-	tracef("freeing paddr [%p]\n", paddr);
+	tracef("freeing p[%p]\n", paddr);
 	u32 frame = (paddr - physmem_base) / 0x1000;
+	tracef("> frame [%d]\n", frame);
 	if (!frame_test(&frames, frame)) {
-		tracef("> double free !", NULL);
+		tracef("> double free !\n", NULL);
 		return;
 	}
 	frame_clear(&frames, frame);

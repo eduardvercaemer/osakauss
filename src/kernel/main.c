@@ -93,6 +93,12 @@ void main() {
 	
 	tracef("testing audio\n", NULL);
 	beep(1000,10);
+
+	tracef("testing page dropping\n", NULL);
+	paddr1 = physmem_alloc();
+	paging_kmap(paddr1, 0x90000000);
+	paging_kdrop(0x90000000);
+	paging_kdrop(0x90000000);
 	
 	tracef("testing syscalls\n",NULL);
 	tracef("> syscall output: ",NULL);
