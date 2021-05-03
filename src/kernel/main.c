@@ -88,6 +88,10 @@ void main() {
 	input_read(&key,1);
 	logf("\n");	          
 
+
+
+
+
 	tracef("testing page faults\n", NULL);
 	u32 * ptr = (u32*)0xa0000000;
 	u32 tmp;
@@ -96,7 +100,7 @@ void main() {
 	logf("value read: %d\n", tmp);
 	logf("writing to [%p]\n", 0xa0000000);
 	*ptr = 0xdeadbeef;
-	
+
 	// trigger breakpoint
 	asm volatile("int $0x03");
 

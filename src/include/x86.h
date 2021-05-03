@@ -80,3 +80,16 @@ panic(const char *message, const char *file, u32 line)
     
     hang();
 }
+static inline void
+reboot_system(){
+  for (;;){
+		int i;
+		for (i = 0;i < 0x10000; i++){
+			if ((inb(0x64) & 0x02) == 0){
+				break;
+			}
+
+		}
+		outb(0x64, 0xfe);
+	}
+}
