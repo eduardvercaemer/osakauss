@@ -57,7 +57,6 @@ input_read(char *buf,int size)
 
 extern void 
 key_buffer_append(char c) {
-
     if(c == 0) {
         return;
     }

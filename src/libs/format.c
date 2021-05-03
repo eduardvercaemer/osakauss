@@ -2,11 +2,18 @@
 
 // the different formatters we have
 
+static void format_char(void (*f)(char), char c);
 static void format_string(void (*f)(char), const char *s);
 static void format_i32_base(void (*f)(char), i32 n, u8 base);
 static void format_i32(void (*f)(char), i32 n);
 static void format_h32(void (*f)(char), u32 n, bool noZeroes);
 static void format_pointer(void (*f)(char), u32 p);
+
+static void
+format_char(void (*f)(char), char c)
+{
+	f(c);
+}
 
 static void
 format_string(void (*f)(char), const char *s)
@@ -121,6 +128,11 @@ formatv(void (*f)(char), const char *fmt, va_list args)
 		switch (c) {
 			case '%': // formatting
 				switch (*(++fmt)) {
+					case 'c': { // char
+						char c = va_arg (args, int);
+						format_char (f, c);
+						break;
+					}
 					case 's': { // string
 						const char *s = va_arg (args, const char *);
 						format_string (f, s);
@@ -141,7 +153,7 @@ formatv(void (*f)(char), const char *fmt, va_list args)
 						format_pointer(f, p);
 						break;
 					}
-					case '%': {// esacped %
+					case '%': {// escaped %
 						f ('%');
 						break;
 					}

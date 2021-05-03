@@ -104,13 +104,12 @@ void main() {
 	tracef("> syscall output: ",NULL);
 	syscall_log_best_number_ever();
 
-	tracef("Press any key\n",NULL);
-	char *key;
+	tracef("Press any key ",NULL);
+	char key[2] = {0};
 	input_read(&key,1);
-	logf("\n");	          
+	logf("\n");
 
-
-
+	tracef("Key read: %s\n", key);
 
 
 	tracef("testing page faults\n", NULL);

@@ -3,7 +3,7 @@
 #include <kernel/log.h>
 #include <x86.h>
 #include <kernel/input.h>
-
+#include <kernel/console.h>
 
 unsigned char kbdus[128] =
 {
@@ -66,7 +66,7 @@ extern void keyboard_handler(struct regs *r)
     else
     {   
         char c = handle_scanCode(scancode);
-        logf("%s", &c);
+        console_putch(c);
         key_buffer_append(c);
     }
 }

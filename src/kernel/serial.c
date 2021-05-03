@@ -31,22 +31,17 @@ extern void handle_serial_in(struct regs *r)
 	switch ((int) c)
 	{
 	case 13:
-		logf("\n");
+		serial_writeb("\n");
 		break;
 	case 127:
-		logf("\b");
+		serial_writeb("\b");
 		break;
 	default:
 		key_buffer_append(c);
-		logf("%s",&c);
+		serial_writeb(c);
 		break;
 	}
-	
-	
-
-
 }
-
 
 // return 0 on success, 1 on error
 static u8
@@ -73,7 +68,6 @@ serial_init(void)
 	install_handler(36, handle_serial_in); // 36 = IRQ 4. interrupt for serial port
 	return 0;
 }
-
 
 extern u8
 require_serial(void)
