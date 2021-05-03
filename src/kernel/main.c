@@ -80,12 +80,22 @@ void main() {
 		
 	tracef("testing heap\n", NULL);
 	u32 *heap1 = (u32 *) kmalloc(16);
-	u32 *heap2 = (u32 *) kmalloc(16);
+	u32 *heap2 = (u32 *) kmalloc(64);
+	u32 *heap3 = (u32 *) kmalloc(32);
 	tracef("> heap1 [%p]\n", heap1);
 	tracef("> heap2 [%p]\n", heap2);
+	tracef("> heap3 [%p]\n", heap3);
 	*heap1 = 0xdeadbeef;
 	*heap2 = *heap1;
-	tracef("> read and write %x\n", *heap2);
+	*heap3 = *heap2;
+	tracef("> read and write %x\n", *heap3);
+	tracef("> free middle buffer of 64 bytes\n", NULL);
+	kfree(heap2);
+	tracef("> allocate now 2 blocks of 16 bytes\n", NULL);
+	heap2 = kmalloc(16);
+	heap3 = kmalloc(16);
+	tracef("> heap2 [%p]\n", heap2);
+	tracef("> heap3 [%p]\n", heap3);
 	
 	tracef("testing timers\n", NULL);
 	timer_wait(100);
