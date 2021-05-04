@@ -59,8 +59,11 @@ fs_node_t *initialise_initrd(u32 location)
     file_headers = (initrd_file_header_t *) (location+sizeof(initrd_header_t));
 
     // Initialise the root directory.
-    initrd_root = (fs_node_t*)kmalloc(sizeof(fs_node_t));
+    
+    initrd_root = (fs_node_t*)kmalloc(sizeof(fs_node_t)); // I think where it breaks
+
     strcpy(initrd_root->name, "initrd");
+    
     initrd_root->mask = initrd_root->uid = initrd_root->gid = initrd_root->inode = initrd_root->length = 0;
     initrd_root->flags = FS_DIRECTORY;
     initrd_root->read = 0;
@@ -85,10 +88,11 @@ fs_node_t *initialise_initrd(u32 location)
     initrd_dev->finddir = &initrd_finddir;
     initrd_dev->ptr = 0;
     initrd_dev->impl = 0;
-
-    root_nodes = (fs_node_t*)kmalloc(sizeof(fs_node_t) * initrd_header->nfiles);
+    
+    root_nodes = (fs_node_t*)kmalloc(sizeof(fs_node_t) * initrd_header->nfiles); // this one is failing
     nroot_nodes = initrd_header->nfiles;
-
+    
+    
     // For every file...
     int i;
     for (i = 0; i < initrd_header->nfiles; i++)
@@ -111,5 +115,6 @@ fs_node_t *initialise_initrd(u32 location)
         root_nodes[i].close = 0;
         root_nodes[i].impl = 0;
     }
+    
     return initrd_root;
 }

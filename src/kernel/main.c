@@ -23,6 +23,7 @@ const u32 magic = 0xdeadbeef;
 static void
 init(struct multiboot *mboot_ptr)
 {
+	trace = false;
 	gdt_init();
 	require_log(LOG_BOTH);
 	
@@ -43,10 +44,13 @@ init(struct multiboot *mboot_ptr)
 
 
 	/* can not be after any of memory management is setup because it will cause a memory fault */
+	trace = false;
 	bool ramdisk = false;
 
 	if (mboot_ptr->mods_count > 0){
 		ramdisk = true;
+		char x[33];
+		logf("mboot_ptr->mods_count = %s;\n",itoa(mboot_ptr->mods_count,x,10));
 	}
 	else{
 		ramdisk = false;
@@ -64,6 +68,7 @@ init(struct multiboot *mboot_ptr)
 
 		// Don't trample our module with placement accesses, please!
 		placement_address = initrd_end;
+		
 	}
 	else{
 		tracef("No ramdisk to load\n",NULL);
@@ -87,6 +92,7 @@ init(struct multiboot *mboot_ptr)
 	 * - physmem_alloc
 	 * - physmem_free
 	 */
+	trace = false;
 	physmem_init();
 	
 	/*
@@ -108,7 +114,7 @@ init(struct multiboot *mboot_ptr)
 	}
 	
 	if (ramdisk){
-		fs_root = initialise_initrd(initrd_location);
+		//fs_root = initialise_initrd(initrd_location); // this is where it breaks. 
 		tracef("Loaded ramdisk\n",NULL);
 	}
 	else{
@@ -124,10 +130,10 @@ init(struct multiboot *mboot_ptr)
 void main(struct multiboot *mboot_ptr) {
 	
 
-	trace = true;
+	
 	init(mboot_ptr);
 
-
+	trace = true;
 	
 	tracef("init successful !\n", NULL);
 	
@@ -170,7 +176,7 @@ void main(struct multiboot *mboot_ptr) {
 	tracef("> waited 100 ticks\n", NULL);
 	
 	tracef("testing audio\n", NULL);
-	//beep(1000,10);
+	beep(1000,10);
 
 	tracef("testing page dropping\n", NULL);
 	paddr1 = physmem_alloc();

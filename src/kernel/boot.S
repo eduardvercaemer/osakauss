@@ -24,12 +24,20 @@ extern main
 
 start:
   cli 			
-  mov esp, stack_space	
+
+  push  ebx
+
+  ;mov esp, stack_space	
   ; calls the main kernel function
   call main
   ; halts the cpu
   hlt		 	
 
-section .bss
-resb 8192		
-stack_space:
+
+;section .bss 
+
+; this part is the issue. 
+; for some reason it makes the multiboot pointer point to random memory addres
+; If i just remove it it fixes it
+;resb 8192		
+;stack_space:

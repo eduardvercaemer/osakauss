@@ -50,9 +50,9 @@ dbg: $(BUILDDIR)/kernel/kernel $(BUILDDIR)/kernel/kernel.dbg
 build-fsGen:
 	@$(CC) -o ./tools/Genfs ./tools/fsGen.c
 build-img-dir:
-	mkdir $(IMG_DIR)
-	mkdir $(IMG_DIR)/boot
-	mkdir $(IMG_DIR)/boot/grub
+	-@mkdir $(IMG_DIR)
+	-@mkdir $(IMG_DIR)/boot
+	-@mkdir $(IMG_DIR)/boot/grub
 build-image-ramdisk: build-img-dir build build-fsGen
 	@cp $(BUILDDIR)/kernel/kernel $(IMG_DIR)/boot/kernel
 	@cd ./tools && ./Genfs && pwd
