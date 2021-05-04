@@ -35,7 +35,7 @@ dirs:
 build: $(BUILDDIR)/kernel/kernel
 
 clean:
-	@rm -rf $(BUILDDIR) *.iso img/boot/initrd.img img/boot/kernel img/boot/grub/grub.cgf
+	@rm -rf $(BUILDDIR) *.iso img/boot/*.img img/boot/kernel img/boot/grub/*.cfg $(IMG_DIR) tools/*.img tools/Genfs
 
 qemu: $(BUILDDIR)/kernel/kernel
 	@qemu-system-i386 $(QEMU_OPTIONS) -serial stdio -kernel $<
@@ -49,14 +49,18 @@ dbg: $(BUILDDIR)/kernel/kernel $(BUILDDIR)/kernel/kernel.dbg
 	@gdb -x ./qemu.dbg
 build-fsGen:
 	@$(CC) -o ./tools/Genfs ./tools/fsGen.c
-build-image-ramdisk: build build-fsGen
+build-img-dir:
+	mkdir $(IMG_DIR)
+	mkdir $(IMG_DIR)/boot
+	mkdir $(IMG_DIR)/boot/grub
+build-image-ramdisk: build-img-dir build build-fsGen
 	@cp $(BUILDDIR)/kernel/kernel $(IMG_DIR)/boot/kernel
 	@cd ./tools && ./Genfs && pwd
 	@cp ./tools/initrd.img $(IMG_DIR)/boot/initrd.img
 	@cp grub/grub-ramdisk.cfg $(IMG_DIR)/boot/grub/grub.cfg
 	@grub-mkrescue -o osakauss.iso $(IMG_DIR)
 
-build-image: build
+build-image: build-img-dir build
 	@cp $(BUILDDIR)/kernel/kernel $(IMG_DIR)/boot/kernel
 	@cp grub/grub.cfg $(IMG_DIR)/boot/grub/grub.cfg
 	@grub-mkrescue -o osakauss.iso $(IMG_DIR)
