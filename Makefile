@@ -35,7 +35,7 @@ dirs:
 build: $(BUILDDIR)/kernel/kernel
 
 clean:
-	@rm -rf $(BUILDDIR)
+	@rm -rf $(BUILDDIR) *.iso img/boot/initrd.img img/boot/kernel img/boot/grub/grub.cgf
 
 qemu: $(BUILDDIR)/kernel/kernel
 	@qemu-system-i386 $(QEMU_OPTIONS) -serial stdio -kernel $<
