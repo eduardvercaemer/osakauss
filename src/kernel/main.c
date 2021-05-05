@@ -36,53 +36,23 @@ init(struct multiboot *mboot_ptr)
 	enable_interrupts();
 	timer_init(100);
 
-
-
-
-
-
-
-
 	/* can not be after any of memory management is setup because it will cause a memory fault */
-	trace = false;
-	bool ramdisk = false;
-
-	if (mboot_ptr->mods_count > 0){
-		ramdisk = true;
-		char x[33];
-		logf("mboot_ptr->mods_count = %s;\n",itoa(mboot_ptr->mods_count,x,10));
-	}
-	else{
-		ramdisk = false;
-	}
+	bool ramdisk = (mboot_ptr->mods_count > 0);
 	u32 placement_address;
 	u32 initrd_location;
 	u32 initrd_end;
 
 	trace = true;
-
-	if (ramdisk){
+	if (ramdisk) {
 		tracef("Found ramdisk\n",NULL);
 		initrd_location = *((u32*)mboot_ptr->mods_addr);
 		initrd_end = *(u32*)(mboot_ptr->mods_addr+4); // forbidden location in memory. can not read from
 
 		// Don't trample our module with placement accesses, please!
 		placement_address = initrd_end;
-		
-	}
-	else{
+	} else {
 		tracef("No ramdisk to load\n",NULL);
 	}
-
-
-
-
-
-
-
-
-
-
 	
 	/*
 	 * First step is to initialize the physmem bookkeeper. This uses a small
@@ -108,16 +78,18 @@ init(struct multiboot *mboot_ptr)
 
 	paging_init(); 
 
-	if (heap_init() < 0) {    // after this, and _only_ after this, we can use the usual kmalloc etc
+	/*
+	 * Initiaize heap for kmalloc and kfree
+	 */
+	if (heap_init() < 0) {
 		tracef("fatal: failed heap init\n", NULL);
 		for (;;);
 	}
 	
-	if (ramdisk){
-		//fs_root = initialise_initrd(initrd_location); // this is where it breaks. 
+	if (ramdisk) {
+		fs_root = initialise_initrd(initrd_location); // this is where it breaks. 
 		tracef("Loaded ramdisk\n",NULL);
-	}
-	else{
+	} else {
 		tracef("Did not load ramdisk",NULL);
 	}
 
@@ -127,14 +99,10 @@ init(struct multiboot *mboot_ptr)
 }
 
 
-void main(struct multiboot *mboot_ptr) {
-	
-
-	
+void main(struct multiboot *mboot_ptr) {	
 	init(mboot_ptr);
 
 	trace = true;
-	
 	tracef("init successful !\n", NULL);
 	
 	tracef("testing physmem allocation\n", NULL);

@@ -1,5 +1,6 @@
 #include <kernel/drivers/initrd.h>
-
+#include <kernel/paging.h>
+#include <kernel/log.h>
 
 initrd_header_t *initrd_header;     // The header.
 initrd_file_header_t *file_headers; // The list of file headers.
@@ -58,6 +59,13 @@ fs_node_t *initialise_initrd(u32 location)
     initrd_header = (initrd_header_t *)location;
     file_headers = (initrd_file_header_t *) (location+sizeof(initrd_header_t));
 
+    // to do, map enough pages for initrd size
+    u32 paddr = location & 0xfffff000;
+    for (u32 i = 0; i < 10; i++) {
+        paging_kmap(paddr, paddr);
+        paddr += 0x1000;
+    }
+
     // Initialise the root directory.
     
     initrd_root = (fs_node_t*)kmalloc(sizeof(fs_node_t)); // I think where it breaks
@@ -89,6 +97,7 @@ fs_node_t *initialise_initrd(u32 location)
     initrd_dev->ptr = 0;
     initrd_dev->impl = 0;
     
+    tracef("!!! Allocating [%d] files\n", initrd_header->nfiles);
     root_nodes = (fs_node_t*)kmalloc(sizeof(fs_node_t) * initrd_header->nfiles); // this one is failing
     nroot_nodes = initrd_header->nfiles;
     
