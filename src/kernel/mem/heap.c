@@ -51,8 +51,8 @@ struct heap heap;
 
 /* static methods */
 
-static void heap_start(struct heap *heap); // done
-static void heap_expand(struct heap *heap, u32 sz); // done
+static i32 heap_start(struct heap *heap); // done
+static i32 heap_expand(struct heap *heap, u32 sz); // done
 static void heap_contract(struct heap *heap, u32 sz);
 static void heap_collapse(struct heap *heap, struct node *node); // done
 static void heap_create_footer(struct node *node); // done
@@ -75,7 +75,7 @@ static void heap_free(struct heap *heap, u32 ptr); // done
 /*
  * Initialize the heap structure and expand to the initial size.
  */
-static void
+static i32
 heap_start(struct heap *heap)
 {
 	heap->start = HEAP_BASE;
@@ -84,17 +84,25 @@ heap_start(struct heap *heap)
 		heap->bins[i] = NULL;
 	}
 
-	heap_expand(heap, HEAP_INIT_SIZE);
+	if (heap_expand(heap, HEAP_INIT_SIZE) < 0) {
+		return -1;
+	}
 	tracef("heap started\n", NULL);
+	return 0;
 }
 
 /*
  * Map new pages to the top of the heap, getting more free memory.
  */
-static void
+static i32
 heap_expand(struct heap *heap, u32 sz)
 {
 	struct node *new;
+
+	if (heap->end + sz - heap->start > HEAP_MAX_SIZE) {
+		tracef("cannot expand, maxed heap at [%d] bytes\n", heap->end - heap->start);
+		return -1;
+	}
 
 	u32 end = heap->end;
 	u32 top = end;
@@ -403,7 +411,9 @@ heap_alloc(struct heap *heap, u32 sz)
 
 	if (!ptr) { // warn, loop ?
 		tracef("oom, expanding\n", NULL);
-		heap_expand(heap, sz);
+		if (heap_expand(heap, sz) < 0) {
+			return NULL;
+		}
 		ptr = heap_alloc(heap, sz);
 	}
 
@@ -429,7 +439,7 @@ heap_free(struct heap *heap, u32 ptr)
 
 /* exports */
 
-extern void
+extern i32
 heap_init(void)
 {
 	tracef("Initializing heap\n", NULL);
@@ -439,7 +449,12 @@ heap_init(void)
 	tracef("> heap init size: [%x] bytes\n", HEAP_INIT_SIZE);
 	tracef("> heap structure at [%p]\n", &heap);
 
-	heap_start(&heap);
+	if (heap_start(&heap) < 0) {
+		tracef("> failed to start heap\n", NULL);
+		return -1;
+	}
+
+	return 0;
 }
 
 extern usize

@@ -9,7 +9,7 @@
  * you _must_ call this before any of the methods in here can
  * work properly
  */
-extern void heap_init(void);
+extern i32 heap_init(void);
 
 extern usize kmalloc(u32 sz);
 extern usize kmalloc_a(u32 sz); // aligned
