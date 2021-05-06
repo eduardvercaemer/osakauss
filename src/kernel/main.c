@@ -52,7 +52,10 @@ init(void)
 	 */
 	paging_init();
 
-	heap_init();    // after this, and _only_ after this, we can use the usual kmalloc etc
+	if (heap_init() < 0) {    // after this, and _only_ after this, we can use the usual kmalloc etc
+		tracef("fatal: failed heap init\n", NULL);
+		for (;;);
+	}
 	syscall_init(); // broken
 	require_input(INPUT_BOTH);
 }
@@ -121,6 +124,9 @@ void main() {
 
 	tracef("Key read: %s\n", key);
 
+	tracef("allocating huge amounts of memory\n", NULL);
+	heap1 = kmalloc(200000000);
+	tracef("> result: [%p]\n", heap1);
 
 	tracef("testing page faults\n", NULL);
 	u32 * ptr = (u32*)0xa0000000;
