@@ -62,7 +62,6 @@ init(struct multiboot *mboot_ptr)
 	 * - physmem_alloc
 	 * - physmem_free
 	 */
-	trace = false;
 	physmem_init();
 	
 	/*
@@ -87,6 +86,7 @@ init(struct multiboot *mboot_ptr)
 	}
 	
 	if (ramdisk) {
+		tracef("> WE ARE RIGHT BEFORE INITRD\n", NULL);
 		fs_root = initialise_initrd(initrd_location); // this is where it breaks. 
 		tracef("Loaded ramdisk\n",NULL);
 	} else {
