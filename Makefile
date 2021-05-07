@@ -82,6 +82,9 @@ qemu-iso-ramdisk-dbg: build-image-ramdisk $(BUILDDIR)/kernel/kernel.dbg
 	@sleep 1
 	@gdb -x ./qemu.dbg
 
+bochs-iso-ramdisk: build-image-ramdisk
+	bochs -f bochsrc.txt
+	
 
 # --------------------------------------------------------------------------- #
 

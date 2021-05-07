@@ -37,7 +37,7 @@ paging_switch_dir_paddr(u32 dir_paddr)
 	u32 cr0;
 	asm volatile("mov %%cr0, %0": "=r"(cr0));
 	cr0 |= 0x80000000; // Enable paging!
-	asm volatile("mov %0, %%cr0":: "r"(cr0));
+	asm volatile("mov %0, %%cr0":: "r"(cr0));// breaks here
 }
 
 /*

@@ -23,8 +23,9 @@ const u32 magic = 0xdeadbeef;
 static void
 init(struct multiboot *mboot_ptr)
 {
-	trace = false;
+	
 	gdt_init();
+	trace = true;
 	require_log(LOG_BOTH);
 	
 	logf("   ...:::   osakauss v0.0.0  :::...\n\n");
