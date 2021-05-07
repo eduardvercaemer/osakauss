@@ -77,7 +77,7 @@ qemu-iso-dbg: build-image
 qemu-iso-ramdisk: build-image-ramdisk
 	@qemu-system-i386 $(QEMU_OPTIONS) -serial stdio -cdrom osakauss.iso
 
-qemu-iso-ramdisk-dbg: build-image-ramdisk
+qemu-iso-ramdisk-dbg: build-image-ramdisk $(BUILDDIR)/kernel/kernel.dbg
 	@qemu-system-i386 $(QEMU_OPTIONS) -serial stdio -cdrom osakauss.iso -s -S &
 	@sleep 1
 	@gdb -x ./qemu.dbg
