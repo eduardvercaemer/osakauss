@@ -56,6 +56,9 @@ static fs_node_t *initrd_finddir(fs_node_t *node, char *name)
 fs_node_t *initialise_initrd(u32 location)
 {
     // Initialise the main and file header pointers and populate the root directory.
+
+
+
     initrd_header = (initrd_header_t *)location;
     file_headers = (initrd_file_header_t *) (location+sizeof(initrd_header_t));
 
@@ -68,7 +71,7 @@ fs_node_t *initialise_initrd(u32 location)
 
     // Initialise the root directory.
     
-    initrd_root = (fs_node_t*)kmalloc(sizeof(fs_node_t)); // I think where it breaks
+    initrd_root = (fs_node_t*)kmalloc(sizeof(fs_node_t)); 
 
     strcpy(initrd_root->name, "initrd");
     

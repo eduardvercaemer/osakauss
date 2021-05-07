@@ -41,15 +41,18 @@ init(struct multiboot *mboot_ptr)
 	u32 placement_address;
 	u32 initrd_location;
 	u32 initrd_end;
+	u32 module_size;
 
 	trace = true;
 	if (ramdisk) {
+		
 		tracef("Found ramdisk\n",NULL);
 		initrd_location = *((u32*)mboot_ptr->mods_addr);
 		initrd_end = *(u32*)(mboot_ptr->mods_addr+4); // forbidden location in memory. can not read from
 
 		// Don't trample our module with placement accesses, please!
 		placement_address = initrd_end;
+		module_size = placement_address - initrd_location;
 	} else {
 		tracef("No ramdisk to load\n",NULL);
 	}
@@ -75,7 +78,7 @@ init(struct multiboot *mboot_ptr)
 	 * We then enable paging.
 	 */
 
-	paging_init(); 
+	paging_init();
 
 	/*
 	 * Initiaize heap for kmalloc and kfree

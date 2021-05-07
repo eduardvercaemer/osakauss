@@ -55,8 +55,8 @@ build-img-dir:
 	-@mkdir $(IMG_DIR)/boot/grub
 build-image-ramdisk: build-img-dir build build-fsGen
 	@cp $(BUILDDIR)/kernel/kernel $(IMG_DIR)/boot/kernel
-	@cd ./tools && ./Genfs && pwd
-	@cp ./tools/initrd.img $(IMG_DIR)/boot/initrd.img
+	@cd ./tools && ./Genfs test.txt test.txt && pwd
+	@cp ./tools/initrd.img $(IMG_DIR)/boot/initrd
 	@cp grub/grub-ramdisk.cfg $(IMG_DIR)/boot/grub/grub.cfg
 	@grub-mkrescue -o osakauss.iso $(IMG_DIR)
 
