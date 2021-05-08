@@ -479,9 +479,20 @@ kmalloc_ap(u32 sz, u32* phys)
 	return kmalloc__(sz, true, phys);
 }
 
+/*
+ * TODO !!
+ * - handle align flag
+ * - handle phys argument
+ * these are gonna be needed when we will want to eventually
+ * allocate new memory tables and directories
+ */
 extern void *
 kmalloc__(u32 sz, bool align, u32 *phys)
 {
+	/* for now, silent the unused arg warnings */
+	align = align;
+	phys = phys;
+
 	return heap_alloc(&heap, sz);
 }
 
