@@ -24,8 +24,8 @@ extern void irq13();
 extern void irq14();
 extern void irq15();
 
-static void *
-interrupt_handlers[256];
+static void (*
+interrupt_handlers[256])(regs_t *);
 
 static const char *exception_messages[] = {
     "Division by zero", // 0
@@ -92,7 +92,7 @@ fault_handler(regs_t *r)
     if (interrupt_handlers[int_no] != 0) {
         void (*handler)(regs_t *r);
         handler = interrupt_handlers[int_no];
-        handler(&r);
+        handler(r);
     } else {
         if (r->int_no < 32) {
             logf("fault: %s\nhalting system\n", exception_messages[r->int_no]);
