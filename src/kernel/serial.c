@@ -1,6 +1,7 @@
 #include <x86.h>
 #include <kernel/serial.h>
 #include <kernel/ISR.h>
+#include <kernel/IRQ.h>
 #include <kernel/log.h>
 #include <stdlib.h>
 #include <kernel/input.h>
