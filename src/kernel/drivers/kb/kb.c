@@ -46,7 +46,7 @@ unsigned char kbdus[128] =
 };	
 
 static char handle_scanCode(char scancode){
-    char c = (char)kbdus[scancode];
+    char c = (char)kbdus[(u32)scancode];
     return c;
 }
 
