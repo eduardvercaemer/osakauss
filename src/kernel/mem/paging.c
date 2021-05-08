@@ -217,7 +217,7 @@ paging_vaddr_get_kmap(u32 vaddr, u32 *frame)
 }
 
 extern void
-paging_page_fault(struct regs *r)
+paging_page_fault(regs_t *r)
 {
 	// A page fault has occurred.
 	// The faulting address is stored in the CR2 register.

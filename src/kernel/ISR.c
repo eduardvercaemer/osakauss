@@ -83,14 +83,14 @@ irq_remap(void)
 
 /* used in assembly/kernel/IRS.S */
 extern void
-fault_handler(struct regs *r)
+fault_handler(regs_t *r)
 {
     static char buf[33];
 
     u8 int_no = r->int_no & 0xFF;
 
     if (interrupt_handlers[int_no] != 0) {
-        void (*handler)(struct regs *r);
+        void (*handler)(regs_t *r);
         handler = interrupt_handlers[int_no];
         handler(&r);
     } else {
@@ -105,7 +105,7 @@ fault_handler(struct regs *r)
 }
 
 extern void
-install_handler(int irq, void (*handler)(struct regs *r))
+install_handler(int irq, void (*handler)(regs_t *r))
 {
     interrupt_handlers[irq] = handler;
 }
@@ -140,9 +140,9 @@ irq_init()
 }
 
 extern void
-irq_handler(struct regs *r)
+irq_handler(regs_t *r)
 {
-    void (*handler)(struct regs *r);
+    void (*handler)(regs_t *r);
     handler = interrupt_handlers[r->int_no];
     if (handler) {
         handler(r);

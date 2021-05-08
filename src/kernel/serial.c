@@ -24,7 +24,7 @@ is_transmit_empty(void)
 	return inb(PORT_COM1 + 5) & 0x20;
 }
 
-extern void handle_serial_in(struct regs *r)
+extern void handle_serial_in(regs_t *r)
 {
 	char c = (char)serial_readb();
 	char x[33];

@@ -50,7 +50,7 @@ static char handle_scanCode(char scancode){
     return c;
 }
 
-extern void keyboard_handler(struct regs *r)
+extern void keyboard_handler(regs_t *r)
 {
     unsigned char scancode;
     /* Read from the keyboard's data buffer */

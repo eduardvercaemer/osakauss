@@ -28,7 +28,7 @@ SYS_CALLS[num_syscalls] =
 
 
 extern void 
-syscall_handle(regs *r){
+syscall_handle(regs_t *r){
     if (r->int_no >= num_syscalls)
        return;
 
