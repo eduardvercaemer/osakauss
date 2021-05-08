@@ -46,12 +46,15 @@ unsigned char kbdus[128] =
 };	
 
 static char handle_scanCode(char scancode){
-    char c = (char)kbdus[scancode];
+    char c = (char)kbdus[(u32)scancode];
     return c;
 }
 
-extern void keyboard_handler(struct regs *r)
+extern void keyboard_handler(regs_t *r)
 {
+    /* silent unused warning */
+    r = r;
+
     unsigned char scancode;
     /* Read from the keyboard's data buffer */
     scancode = inb(0x60);

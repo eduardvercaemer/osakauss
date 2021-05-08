@@ -9,7 +9,6 @@
 static struct page_t *table_map         = (struct page_t *) 0x40000000; // all our kernel tables at table 512
 static struct page_d *kernel_directory  = (struct page_d *) 0x40400000; // kernel directory at table 513
 static u32 kernel_paddr                 = 0x00000000;					// kernel directory physmem base
-static struct page_d *current_directory = NULL;
 static bool paging_enabled = false;
 
 /* linker */
@@ -34,7 +33,6 @@ static void
 paging_switch_dir_paddr(u32 dir_paddr)
 {
 	tracef("directory [%p]\n", dir_paddr);
-	current_directory = dir_paddr;
 	asm volatile("mov %0, %%cr3":: "r"(dir_paddr));
 	u32 cr0;
 	asm volatile("mov %%cr0, %0": "=r"(cr0));
@@ -51,7 +49,7 @@ get_kdir(void)
 	if (paging_enabled) {
 		return kernel_directory;
 	} else {
-		return kernel_paddr;
+		return (struct page_d *) kernel_paddr;
 	}
 }
 
@@ -87,7 +85,7 @@ get_ktable(u32 vaddr, bool create)
 		}
 		
 		// we also need to map this table
-		paging_kmap(table_paddr, table_vaddr);
+		paging_kmap((u32)table_paddr, (u32)table_vaddr);
 
 		return table;
 	}
@@ -139,7 +137,7 @@ paging_init(void)
 	}
 
 	tracef("> mapping kernel directory at [%p]\n", kernel_directory);
-	paging_kmap(dir, kernel_directory);
+	paging_kmap((u32)dir, (u32)kernel_directory);
 	
 	//dump_directory(dir);
 	//asm volatile("int $3");
@@ -217,7 +215,7 @@ paging_vaddr_get_kmap(u32 vaddr, u32 *frame)
 }
 
 extern void
-paging_page_fault(struct regs *r)
+paging_page_fault(regs_t *r)
 {
 	// A page fault has occurred.
 	// The faulting address is stored in the CR2 register.

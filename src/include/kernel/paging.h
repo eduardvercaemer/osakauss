@@ -55,7 +55,7 @@ extern bool paging_vaddr_get_kmap(u32 vaddr, u32 *frame);
 /*
  * Handler for page faults.
  */
-extern void paging_page_fault(struct regs *r);
+extern void paging_page_fault(regs_t *r);
 
 /*
  * Create a verbose dump of the current state of a paging directory.

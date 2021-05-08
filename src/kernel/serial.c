@@ -1,6 +1,7 @@
 #include <x86.h>
 #include <kernel/serial.h>
 #include <kernel/ISR.h>
+#include <kernel/IRQ.h>
 #include <kernel/log.h>
 #include <stdlib.h>
 #include <kernel/input.h>
@@ -24,17 +25,19 @@ is_transmit_empty(void)
 	return inb(PORT_COM1 + 5) & 0x20;
 }
 
-extern void handle_serial_in(struct regs *r)
+extern void handle_serial_in(regs_t *r)
 {
+	/* silence unused arg warning */
+	r = r;
+
 	char c = (char)serial_readb();
-	char x[33];
 	switch ((int) c)
 	{
 	case 13:
-		serial_writeb("\n");
+		serial_writeb('\n');
 		break;
 	case 127:
-		serial_writeb("\b");
+		serial_writeb('\b');
 		break;
 	default:
 		key_buffer_append(c);
