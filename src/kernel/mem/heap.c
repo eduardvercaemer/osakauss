@@ -67,8 +67,8 @@ static u32 heap_get_bin_idx(u32 size); // done
 static struct node *heap_get_best_fit(struct node *head, u32 sz); // done
 static void heap_consume(struct heap *heap, struct node *node, u32 sz); // done
 
-static u32 heap_alloc(struct heap *heap, u32 sz); // done
-static void heap_free(struct heap *heap, u32 ptr); // done
+static void * heap_alloc(struct heap *heap, u32 sz); // done
+static void heap_free(struct heap *heap, void * ptr); // done
 
 /* static method definitions */
 
@@ -394,12 +394,12 @@ heap_consume(struct heap *heap, struct node *node, u32 sz)
 /*
  * Create an allocation from the most appropiate bin.
  */
-static u32
+static void *
 heap_alloc(struct heap *heap, u32 sz)
 {
 	tracef("sz [%d]\n", sz);
 	u32 idx;
-	u32 ptr = NULL;
+	void * ptr = NULL;
 	struct node *node;
 	for (idx = heap_get_bin_idx(sz); idx < BIN_COUNT; idx++) {
 		tracef("> bin [%d]\n", idx);
@@ -408,7 +408,7 @@ heap_alloc(struct heap *heap, u32 sz)
 
 		// we got a fit
 		tracef("> fit at [%p]\n", fit);
-		ptr = (u32)fit + sizeof (struct node);
+		ptr = (void *) ((u32)fit + sizeof (struct node));
 		heap_consume(heap, fit, sz);
 		break;
 	}
@@ -428,9 +428,9 @@ heap_alloc(struct heap *heap, u32 sz)
  * Free a chunk of memory.
  */
 static void
-heap_free(struct heap *heap, u32 ptr)
+heap_free(struct heap *heap, void * ptr)
 {
-	struct node *node = (struct node *) (ptr - sizeof (struct node));
+	struct node *node = (struct node *) ((u32)ptr - sizeof (struct node));
 
 	if (node->hole) return; // double free
 
