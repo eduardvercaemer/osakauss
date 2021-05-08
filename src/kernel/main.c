@@ -67,16 +67,16 @@ void main() {
 	tracef("init successful !\n", NULL);
 	
 	tracef("testing physmem allocation\n", NULL);
-	u32* paddr1 = (u32*) physmem_alloc();
-	u32* paddr2 = (u32*) physmem_alloc();
-	u32* paddr3 = (u32*) physmem_alloc();
+	u32 paddr1 = physmem_alloc();
+	u32 paddr2 = physmem_alloc();
+	u32 paddr3 = physmem_alloc();
 	tracef("> paddr1 [%p]\n", paddr1);
 	tracef("> paddr2 [%p]\n", paddr2);
 	tracef("> paddr3 [%p]\n", paddr3);
-	physmem_free((u32) paddr2);
-	physmem_free((u32) paddr1);
-	paddr2 = (u32*) physmem_alloc();
-	paddr1 = (u32*) physmem_alloc();
+	physmem_free(paddr2);
+	physmem_free(paddr1);
+	paddr2 = physmem_alloc();
+	paddr1 = physmem_alloc();
 	tracef("> paddr1 [%p]\n", paddr1);
 	tracef("> paddr2 [%p]\n", paddr2);
 	tracef("> paddr3 [%p]\n", paddr3);
