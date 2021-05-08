@@ -67,16 +67,16 @@ void main() {
 	tracef("init successful !\n", NULL);
 	
 	tracef("testing physmem allocation\n", NULL);
-	u32* paddr1 = (u32*) physmem_alloc();
-	u32* paddr2 = (u32*) physmem_alloc();
-	u32* paddr3 = (u32*) physmem_alloc();
+	u32 paddr1 = physmem_alloc();
+	u32 paddr2 = physmem_alloc();
+	u32 paddr3 = physmem_alloc();
 	tracef("> paddr1 [%p]\n", paddr1);
 	tracef("> paddr2 [%p]\n", paddr2);
 	tracef("> paddr3 [%p]\n", paddr3);
-	physmem_free((u32) paddr2);
-	physmem_free((u32) paddr1);
-	paddr2 = (u32*) physmem_alloc();
-	paddr1 = (u32*) physmem_alloc();
+	physmem_free(paddr2);
+	physmem_free(paddr1);
+	paddr2 = physmem_alloc();
+	paddr1 = physmem_alloc();
 	tracef("> paddr1 [%p]\n", paddr1);
 	tracef("> paddr2 [%p]\n", paddr2);
 	tracef("> paddr3 [%p]\n", paddr3);
@@ -113,13 +113,15 @@ void main() {
 	paging_kdrop(0x90000000);
 	paging_kdrop(0x90000000);
 	
+	/* currently broken --
 	tracef("testing syscalls\n",NULL);
 	tracef("> syscall output: ",NULL);
 	syscall_log_best_number_ever();
+	*/
 
 	tracef("Press any key ",NULL);
 	char key[2] = {0};
-	input_read(&key,1);
+	input_read(key,1);
 	logf("\n");
 
 	tracef("Key read: %s\n", key);

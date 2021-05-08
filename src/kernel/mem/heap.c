@@ -53,11 +53,11 @@ struct heap heap;
 
 static i32 heap_start(struct heap *heap); // done
 static i32 heap_expand(struct heap *heap, u32 sz); // done
-static void heap_contract(struct heap *heap, u32 sz);
+// TODO : static void heap_contract(struct heap *heap, u32 sz);
 static void heap_collapse(struct heap *heap, struct node *node); // done
 static void heap_create_footer(struct node *node); // done
-static struct node *heap_first_node(struct heap *heap); // done
-static struct node *heap_last_node(struct heap *heap); // done
+// UNUSED static struct node *heap_first_node(struct heap *heap); // done
+// UNUSED static struct node *heap_last_node(struct heap *heap); // done
 static struct node *heap_prev_node(struct heap *heap, struct node *node); // done
 static struct node *heap_next_node(struct heap *heap, struct node *node); // done
 static struct footer *heap_get_footer(struct node *node); // done
@@ -67,8 +67,8 @@ static u32 heap_get_bin_idx(u32 size); // done
 static struct node *heap_get_best_fit(struct node *head, u32 sz); // done
 static void heap_consume(struct heap *heap, struct node *node, u32 sz); // done
 
-static u32 heap_alloc(struct heap *heap, u32 sz); // done
-static void heap_free(struct heap *heap, u32 ptr); // done
+static void * heap_alloc(struct heap *heap, u32 sz); // done
+static void heap_free(struct heap *heap, void * ptr); // done
 
 /* static method definitions */
 
@@ -93,12 +93,13 @@ heap_start(struct heap *heap)
 
 /*
  * Map new pages to the top of the heap, getting more free memory.
+ *
+ * Returns
+ *   -1 on error, 0 on success
  */
 static i32
 heap_expand(struct heap *heap, u32 sz)
 {
-	struct node *new;
-
 	if (heap->end + sz - heap->start > HEAP_MAX_SIZE) {
 		tracef("cannot expand, maxed heap at [%d] bytes\n", heap->end - heap->start);
 		return -1;
@@ -125,6 +126,7 @@ heap_expand(struct heap *heap, u32 sz)
 
 	heap_bin_insert(heap, new_region);
 	heap_collapse(heap, new_region);
+	return 0;
 }
 
 /*
@@ -188,22 +190,26 @@ heap_create_footer(struct node *node)
 /*
  * Get a pointer to the first node of the heap.
  */
+/* UNUSED
 static struct node *
 heap_first_node(struct heap *heap)
 {
 	if (heap->start == heap->end) return NULL;
 	return (struct heap *) heap->start;
 }
+*/
 
 /*
  * Get a pointer to the last node of the heap.
  */
+/* UNUSED
 static struct node *
 heap_last_node(struct heap *heap)
 {
 	if (heap->start == heap->end) return NULL;
 	return (struct node *) heap_prev_node(heap, heap->end);
 }
+*/
 
 /*
  * Get the previous node from a node pointer.
@@ -212,7 +218,7 @@ static struct node *
 heap_prev_node(struct heap *heap, struct node *node)
 {
 	struct footer *prev_foot = (struct footer *) ((u32)node - sizeof (struct footer));
-	if (prev_foot < heap->start) return NULL;
+	if ((u32)prev_foot < heap->start) return NULL;
 	return prev_foot->header;
 }
 
@@ -223,7 +229,7 @@ static struct node *
 heap_next_node(struct heap *heap, struct node *node)
 {
 	struct node *next = (struct node *) ((u32)heap_get_footer(node) + sizeof (struct footer));
-	if (next >= heap->end) return NULL;
+	if ((u32)next >= heap->end) return NULL;
 	return next;
 }
 
@@ -390,13 +396,12 @@ heap_consume(struct heap *heap, struct node *node, u32 sz)
 /*
  * Create an allocation from the most appropiate bin.
  */
-static u32
+static void *
 heap_alloc(struct heap *heap, u32 sz)
 {
 	tracef("sz [%d]\n", sz);
 	u32 idx;
-	u32 ptr = NULL;
-	struct node *node;
+	void * ptr = NULL;
 	for (idx = heap_get_bin_idx(sz); idx < BIN_COUNT; idx++) {
 		tracef("> bin [%d]\n", idx);
 		struct node *fit = heap_get_best_fit(heap->bins[idx], sz);
@@ -404,7 +409,7 @@ heap_alloc(struct heap *heap, u32 sz)
 
 		// we got a fit
 		tracef("> fit at [%p]\n", fit);
-		ptr = (u32)fit + sizeof (struct node);
+		ptr = (void *) ((u32)fit + sizeof (struct node));
 		heap_consume(heap, fit, sz);
 		break;
 	}
@@ -424,9 +429,9 @@ heap_alloc(struct heap *heap, u32 sz)
  * Free a chunk of memory.
  */
 static void
-heap_free(struct heap *heap, u32 ptr)
+heap_free(struct heap *heap, void * ptr)
 {
-	struct node *node = (struct node *) (ptr - sizeof (struct node));
+	struct node *node = (struct node *) ((u32)ptr - sizeof (struct node));
 
 	if (node->hole) return; // double free
 
@@ -457,32 +462,43 @@ heap_init(void)
 	return 0;
 }
 
-extern usize
+extern void *
 kmalloc(u32 sz)
 {
 	return kmalloc__(sz, false, NULL);
 }
 
-extern usize
+extern void *
 kmalloc_a(u32 sz)
 {
 	return kmalloc__(sz, true, NULL);
 }
 
-extern usize
+extern void *
 kmalloc_ap(u32 sz, u32* phys)
 {
 	return kmalloc__(sz, true, phys);
 }
 
-extern usize
+/*
+ * TODO !!
+ * - handle align flag
+ * - handle phys argument
+ * these are gonna be needed when we will want to eventually
+ * allocate new memory tables and directories
+ */
+extern void *
 kmalloc__(u32 sz, bool align, u32 *phys)
 {
+	/* for now, silent the unused arg warnings */
+	align = align;
+	phys = phys;
+
 	return heap_alloc(&heap, sz);
 }
 
 extern void
-kfree(u32 ptr)
+kfree(void * ptr)
 {
 	heap_free(&heap, ptr);
 }

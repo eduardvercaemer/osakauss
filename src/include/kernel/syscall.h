@@ -1,12 +1,8 @@
 #pragma once
-
-
 #include <kernel/log.h>
 #include <stdlib.h>
 
-
 extern void syscall_init();
-
 
 #define DECL_SYSCALL0(fn) int syscall_##fn();
 #define DECL_SYSCALL1(fn,p1) int syscall_##fn(p1);
@@ -62,12 +58,6 @@ int syscall_##fn(P1 p1, P2 p2, P3 p3, P4 p4, P5 p5) \
   asm volatile("int $0x80" : "=a" (a) : "0" (num), "b" ((int)p1), "c" ((int)p2), "d" ((int)p3), "S" ((int)p4), "D" ((int)p5)); \
   return a; \
 }
-
-
-static void log_best_number_ever(){
-    logf("10\n");
-}
-
 
 /*
 This is where you also have to define your system call

@@ -21,7 +21,9 @@ OBJS   = $(patsubst $(SRCDIR)/%.c,$(BUILDDIR)/%.o,$(COBJS))
 
 # --------------------------------------------------------------------------- #
 
-.PHONY: dirs build clean qemu qemu-serial dbg
+.PHONY: all dirs build clean qemu qemu-serial dbg
+
+all: build
 
 dirs:
 	@mkdir -p $(BUILDDIR)
@@ -30,27 +32,27 @@ dirs:
 	&& cd ../$(BUILDDIR) \
 	&& mkdir -p $$dirs
 
-build: dirs $(BUILDDIR)/kernel/kernel
+build: $(BUILDDIR)/kernel/kernel
 
 clean:
 	@rm -rf $(BUILDDIR)
 
-qemu-serial: build
-	@qemu-system-i386 $(QEMU_OPTIONS) -display none -serial stdio -kernel $(BUILDDIR)/kernel/kernel
+qemu: $(BUILDDIR)/kernel/kernel
+	@qemu-system-i386 $(QEMU_OPTIONS) -serial stdio -kernel $<
 
-qemu: build
-	@qemu-system-i386 $(QEMU_OPTIONS) -serial stdio -kernel $(BUILDDIR)/kernel/kernel
+qemu-serial: $(BUILDDIR)/kernel/kernel
+	@qemu-system-i386 $(QEMU_OPTIONS) -display none -serial stdio -kernel $<
 
-dbg: build $(BUILDDIR)/kernel/kernel.dbg
-	@qemu-system-i386 $(QEMU_OPTIONS) -serial stdio -kernel $(BUILDDIR)/kernel/kernel -s -S &
+dbg: $(BUILDDIR)/kernel/kernel $(BUILDDIR)/kernel/kernel.dbg
+	@qemu-system-i386 $(QEMU_OPTIONS) -serial stdio -kernel $< -s -S &
 	@sleep 1
 	@gdb -x ./qemu.dbg
 
 # --------------------------------------------------------------------------- #
 
-$(BUILDDIR)/kernel/kernel: $(BUILDDIR)/kernel/kernel.elf
+$(BUILDDIR)/kernel/kernel: dirs $(BUILDDIR)/kernel/kernel.elf
 	@echo -e " [$(OBJCOPY)]\tkernel"
-	@$(OBJCOPY) --strip-unneeded $< $@
+	@$(OBJCOPY) --strip-unneeded $(BUILDDIR)/kernel/kernel.elf $@
 
 $(BUILDDIR)/kernel/kernel.dbg: $(BUILDDIR)/kernel/kernel.elf
 	@echo -e " [$(OBJCOPY)]\tkernel.dbg"

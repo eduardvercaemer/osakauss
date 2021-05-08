@@ -1,6 +1,5 @@
 #pragma once
-
-
+#include <kernel/ISR.h>
 
 extern void irq0();
 extern void irq1();
@@ -19,14 +18,8 @@ extern void irq13();
 extern void irq14();
 extern void irq15();
 
-
-
-
-
-extern void install_handler(int irq, void (*handler)(struct regs *r));
-
+extern void install_handler(int irq, void (*handler)(regs_t *r));
 extern void uninstall_handler(int irq);
-
 
 extern void irq_init();
 

@@ -11,8 +11,8 @@
  */
 extern i32 heap_init(void);
 
-extern usize kmalloc(u32 sz);
-extern usize kmalloc_a(u32 sz); // aligned
-extern usize kmalloc_ap(u32 sz, u32* phys); // aligned
-extern usize kmalloc__(u32 sz, bool align, u32 *phys); // internal method
-extern void  kfree(usize ptr);
+extern void * kmalloc(u32 sz);
+extern void * kmalloc_a(u32 sz); // aligned
+extern void * kmalloc_ap(u32 sz, u32* phys); // aligned
+extern void * kmalloc__(u32 sz, bool align, u32 *phys); // internal method
+extern void  kfree(void * ptr);

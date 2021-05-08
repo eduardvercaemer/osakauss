@@ -70,7 +70,6 @@ key_buffer_append(char c) {
     return;
 }
 
-
 extern int 
 require_input(enum input option){
     switch (option) {
@@ -82,18 +81,13 @@ require_input(enum input option){
 		case INPUT_KEYBOARD:
             require_keyboard();
             require_satisfied.keyboard = 1;
+            return 1;
 		case INPUT_BOTH:
-			if (require_satisfied.serial){
-
-            }
-            else{
-                require_serial();
+            if (!require_satisfied.serial) {
+                if (!require_serial()) return 0;
                 require_satisfied.serial = 1;
             }
-            if (require_satisfied.keyboard){
-                
-            }
-            else{
+            if (!require_satisfied.keyboard) {
                 require_keyboard();
                 require_satisfied.keyboard =  1;  
             }
@@ -101,7 +95,6 @@ require_input(enum input option){
 		default:
 			return 0;
     }
-
 }
 
 

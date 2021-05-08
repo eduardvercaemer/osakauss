@@ -3,6 +3,7 @@
  * The location of IDT.c is kernel/IDT.c
  */
 #include <kernel/ISR.h>
+#include <kernel/IDT.h>
 #include <kernel/log.h>
 #include <stdlib.h>
 #include <x86.h>
@@ -24,8 +25,8 @@ extern void irq13();
 extern void irq14();
 extern void irq15();
 
-static void *
-interrupt_handlers[256];
+static void (*
+interrupt_handlers[256])(regs_t *);
 
 static const char *exception_messages[] = {
     "Division by zero", // 0
@@ -83,16 +84,16 @@ irq_remap(void)
 
 /* used in assembly/kernel/IRS.S */
 extern void
-fault_handler(struct regs *r)
+fault_handler(regs_t *r)
 {
     static char buf[33];
 
     u8 int_no = r->int_no & 0xFF;
 
     if (interrupt_handlers[int_no] != 0) {
-        void (*handler)(struct regs *r);
+        void (*handler)(regs_t *r);
         handler = interrupt_handlers[int_no];
-        handler(&r);
+        handler(r);
     } else {
         if (r->int_no < 32) {
             logf("fault: %s\nhalting system\n", exception_messages[r->int_no]);
@@ -105,7 +106,7 @@ fault_handler(struct regs *r)
 }
 
 extern void
-install_handler(int irq, void (*handler)(struct regs *r))
+install_handler(int irq, void (*handler)(regs_t *r))
 {
     interrupt_handlers[irq] = handler;
 }
@@ -140,9 +141,9 @@ irq_init()
 }
 
 extern void
-irq_handler(struct regs *r)
+irq_handler(regs_t *r)
 {
-    void (*handler)(struct regs *r);
+    void (*handler)(regs_t *r);
     handler = interrupt_handlers[r->int_no];
     if (handler) {
         handler(r);
