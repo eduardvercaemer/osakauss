@@ -218,7 +218,7 @@ static struct node *
 heap_prev_node(struct heap *heap, struct node *node)
 {
 	struct footer *prev_foot = (struct footer *) ((u32)node - sizeof (struct footer));
-	if (prev_foot < heap->start) return NULL;
+	if ((u32)prev_foot < heap->start) return NULL;
 	return prev_foot->header;
 }
 
@@ -229,7 +229,7 @@ static struct node *
 heap_next_node(struct heap *heap, struct node *node)
 {
 	struct node *next = (struct node *) ((u32)heap_get_footer(node) + sizeof (struct footer));
-	if (next >= heap->end) return NULL;
+	if ((u32)next >= heap->end) return NULL;
 	return next;
 }
 
