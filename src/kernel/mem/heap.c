@@ -56,8 +56,8 @@ static i32 heap_expand(struct heap *heap, u32 sz); // done
 // TODO : static void heap_contract(struct heap *heap, u32 sz);
 static void heap_collapse(struct heap *heap, struct node *node); // done
 static void heap_create_footer(struct node *node); // done
-static struct node *heap_first_node(struct heap *heap); // done
-static struct node *heap_last_node(struct heap *heap); // done
+// UNUSED static struct node *heap_first_node(struct heap *heap); // done
+// UNUSED static struct node *heap_last_node(struct heap *heap); // done
 static struct node *heap_prev_node(struct heap *heap, struct node *node); // done
 static struct node *heap_next_node(struct heap *heap, struct node *node); // done
 static struct footer *heap_get_footer(struct node *node); // done
@@ -188,22 +188,26 @@ heap_create_footer(struct node *node)
 /*
  * Get a pointer to the first node of the heap.
  */
+/* UNUSED
 static struct node *
 heap_first_node(struct heap *heap)
 {
 	if (heap->start == heap->end) return NULL;
 	return (struct heap *) heap->start;
 }
+*/
 
 /*
  * Get a pointer to the last node of the heap.
  */
+/* UNUSED
 static struct node *
 heap_last_node(struct heap *heap)
 {
 	if (heap->start == heap->end) return NULL;
 	return (struct node *) heap_prev_node(heap, heap->end);
 }
+*/
 
 /*
  * Get the previous node from a node pointer.
