@@ -31,10 +31,10 @@ extern void handle_serial_in(regs_t *r)
 	switch ((int) c)
 	{
 	case 13:
-		serial_writeb("\n");
+		serial_writeb('\n');
 		break;
 	case 127:
-		serial_writeb("\b");
+		serial_writeb('\b');
 		break;
 	default:
 		key_buffer_append(c);
