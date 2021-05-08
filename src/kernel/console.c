@@ -101,13 +101,14 @@ putch(char c)
 	update_cursor(terminal_column,terminal_row);
 }
 
-// deprecate ?
+/* UNUSED
 static void
 terminal_write(const char* data, usize size)
 {
 	for (usize i = 0; i < size; i++)
 		putch(data[i]);
 }
+*/
 
 static void
 init_cursor(void){
@@ -124,12 +125,14 @@ enable_cursor(void)
 	outb(0x3D5, (inb(0x3D5) & 0xE0) | 15);
 }
 
+/* UNUSED
 static void
 disable_cursor(void)
 {
 	outb(0x3D4, 0x0A);
 	outb(0x3D5, 0x20);
 }
+*/
 
 static void
 update_cursor(int x, int y)
@@ -145,6 +148,7 @@ update_cursor(int x, int y)
 	outb(0x3D5, (u8) ((pos >> 8) & 0xFF));
 }
 
+/* UNUSED
 static u16
 get_cursor_position(void)
 {
@@ -155,6 +159,7 @@ get_cursor_position(void)
 	pos |= ((u16)inb(0x3D5)) << 8;
 	return pos;
 }
+*/
 
 /* public exports */
 
