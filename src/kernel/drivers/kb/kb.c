@@ -52,6 +52,9 @@ static char handle_scanCode(char scancode){
 
 extern void keyboard_handler(regs_t *r)
 {
+    /* silent unused warning */
+    r = r;
+
     unsigned char scancode;
     /* Read from the keyboard's data buffer */
     scancode = inb(0x60);
