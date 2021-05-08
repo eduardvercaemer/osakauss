@@ -457,32 +457,32 @@ heap_init(void)
 	return 0;
 }
 
-extern usize
+extern void *
 kmalloc(u32 sz)
 {
 	return kmalloc__(sz, false, NULL);
 }
 
-extern usize
+extern void *
 kmalloc_a(u32 sz)
 {
 	return kmalloc__(sz, true, NULL);
 }
 
-extern usize
+extern void *
 kmalloc_ap(u32 sz, u32* phys)
 {
 	return kmalloc__(sz, true, phys);
 }
 
-extern usize
+extern void *
 kmalloc__(u32 sz, bool align, u32 *phys)
 {
 	return heap_alloc(&heap, sz);
 }
 
 extern void
-kfree(u32 ptr)
+kfree(void * ptr)
 {
 	heap_free(&heap, ptr);
 }
