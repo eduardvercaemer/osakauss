@@ -3,6 +3,7 @@
  * The location of IDT.c is kernel/IDT.c
  */
 #include <kernel/ISR.h>
+#include <kernel/IDT.h>
 #include <kernel/log.h>
 #include <stdlib.h>
 #include <x86.h>
