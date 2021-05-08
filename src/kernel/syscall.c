@@ -1,7 +1,7 @@
 #include <kernel/syscall.h>
-
 #include <types.h>
 #include <kernel/ISR.h>
+#include <kernel/IRQ.h>
 #include <kernel/IDT.h>
 #include <kernel/log.h>
 #include <stdlib.h>
