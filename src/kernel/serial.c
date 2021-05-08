@@ -26,6 +26,9 @@ is_transmit_empty(void)
 
 extern void handle_serial_in(regs_t *r)
 {
+	/* silence unused arg warning */
+	r = r;
+
 	char c = (char)serial_readb();
 	char x[33];
 	switch ((int) c)
