@@ -400,7 +400,6 @@ heap_alloc(struct heap *heap, u32 sz)
 	tracef("sz [%d]\n", sz);
 	u32 idx;
 	void * ptr = NULL;
-	struct node *node;
 	for (idx = heap_get_bin_idx(sz); idx < BIN_COUNT; idx++) {
 		tracef("> bin [%d]\n", idx);
 		struct node *fit = heap_get_best_fit(heap->bins[idx], sz);
