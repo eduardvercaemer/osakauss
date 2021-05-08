@@ -30,7 +30,6 @@ extern void handle_serial_in(regs_t *r)
 	r = r;
 
 	char c = (char)serial_readb();
-	char x[33];
 	switch ((int) c)
 	{
 	case 13:
