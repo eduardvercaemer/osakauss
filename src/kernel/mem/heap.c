@@ -93,6 +93,9 @@ heap_start(struct heap *heap)
 
 /*
  * Map new pages to the top of the heap, getting more free memory.
+ *
+ * Returns
+ *   -1 on error, 0 on success
  */
 static i32
 heap_expand(struct heap *heap, u32 sz)
@@ -125,6 +128,7 @@ heap_expand(struct heap *heap, u32 sz)
 
 	heap_bin_insert(heap, new_region);
 	heap_collapse(heap, new_region);
+	return 0;
 }
 
 /*
