@@ -1,5 +1,6 @@
 SRCDIR   = ./src
 BUILDDIR = ./build
+SCRIPTS  = ./scripts
 
 # --------------------------------------------------------------------------- #
 
@@ -46,7 +47,7 @@ qemu-serial: $(BUILDDIR)/kernel/kernel
 dbg: $(BUILDDIR)/kernel/kernel $(BUILDDIR)/kernel/kernel.dbg
 	@qemu-system-i386 $(QEMU_OPTIONS) -serial stdio -kernel $< -s -S &
 	@sleep 1
-	@gdb -x ./qemu.dbg
+	@gdb -x $(SCRIPTS)/qemu.dbg
 
 # --------------------------------------------------------------------------- #
 
