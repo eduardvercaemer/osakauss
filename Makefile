@@ -11,7 +11,7 @@ CFLAGS = -std=gnu99 -nostdlib -m32 -ffreestanding -fno-pie -fno-builtin -fno-sta
 LFLAGS = -m elf_i386
 ASFLAGS = -g -f elf32 -I./src/include/assembly
 QEMU_OPTIONS = -soundhw pcspk -m 4096
-
+IMG_DIR=img
 # --------------------------------------------------------------------------- #
 
 COBJS  = $(shell find $(SRCDIR) -name '*.c')
@@ -47,6 +47,37 @@ dbg: $(BUILDDIR)/kernel/kernel $(BUILDDIR)/kernel/kernel.dbg
 	@qemu-system-i386 $(QEMU_OPTIONS) -serial stdio -kernel $< -s -S &
 	@sleep 1
 	@gdb -x ./qemu.dbg
+build-fsGen:
+	@$(CC) -o ./tools/Genfs ./tools/fsGen.c
+build-image-ramdisk: build build-fsGen
+	@cp $(BUILDDIR)/kernel/kernel $(IMG_DIR)/boot/kernel
+	@cd ./tools && ./Genfs && pwd
+	@cp ./tools/initrd.img $(IMG_DIR)/boot/initrd.img
+	@cp grub/grub-ramdisk.cfg $(IMG_DIR)/boot/grub/grub.cfg
+	@grub-mkrescue -o osakauss.iso $(IMG_DIR)
+
+build-image: build
+	@cp $(BUILDDIR)/kernel/kernel $(IMG_DIR)/boot/kernel
+	@cp grub/grub.cfg $(IMG_DIR)/boot/grub/grub.cfg
+	@grub-mkrescue -o osakauss.iso $(IMG_DIR)
+
+
+qemu-iso: build-image
+	@qemu-system-i386 $(QEMU_OPTIONS) -serial stdio -cdrom osakauss.iso
+
+qemu-iso-dbg: build-image
+	@qemu-system-i386 $(QEMU_OPTIONS) -serial stdio -cdrom osakauss.iso -s -S &
+	@sleep 1
+	@gdb -x ./qemu.dbg
+
+qemu-iso-ramdisk: build-image-ramdisk
+	@qemu-system-i386 $(QEMU_OPTIONS) -serial stdio -cdrom osakauss.iso
+
+qemu-iso-ramdisk-dbg: build-image-ramdisk
+	@qemu-system-i386 $(QEMU_OPTIONS) -serial stdio -cdrom osakauss.iso -s -S &
+	@sleep 1
+	@gdb -x ./qemu.dbg
+
 
 # --------------------------------------------------------------------------- #
 

@@ -12,24 +12,72 @@
 #include <x86.h>
 #include <kernel/syscall.h>
 #include <kernel/input.h>
+#include <kernel/multiboot.h>
+#include <kernel/drivers/fs.h>
+#include <kernel/drivers/initrd.h>
 
 const u32 magic = 0xdeadbeef;
 
+
+
 static void
-init(void)
+init(struct multiboot *mboot_ptr)
 {
-	
+	gdt_init();
 	require_log(LOG_BOTH);
 	
 	logf("   ...:::   osakauss v0.0.0  :::...\n\n");
 	
 	// todo, move all these into descriptors_init or similar
-	gdt_init();
 	idt_init();
 	isr_init();
 	irq_init();
 	enable_interrupts();
 	timer_init(100);
+
+
+
+
+
+
+
+
+	/* can not be after any of memory management is setup because it will cause a memory fault */
+	bool ramdisk = false;
+
+	if (mboot_ptr->mods_count > 0){
+		ramdisk = true;
+	}
+	else{
+		ramdisk = false;
+	}
+	u32 placement_address;
+	u32 initrd_location;
+	u32 initrd_end;
+
+	trace = true;
+
+	if (ramdisk){
+		tracef("Found ramdisk\n",NULL);
+		initrd_location = *((u32*)mboot_ptr->mods_addr);
+		initrd_end = *(u32*)(mboot_ptr->mods_addr+4); // forbidden location in memory. can not read from
+
+		// Don't trample our module with placement accesses, please!
+		placement_address = initrd_end;
+	}
+	else{
+		tracef("No ramdisk to load\n",NULL);
+	}
+
+
+
+
+
+
+
+
+
+
 	
 	/*
 	 * First step is to initialize the physmem bookkeeper. This uses a small
@@ -40,6 +88,7 @@ init(void)
 	 * - physmem_free
 	 */
 	physmem_init();
+	
 	/*
 	 * This allocates a paging directorry for kernel memory, and then proceeds
 	 * to identity map the early kernel (until the end symbol from the linker).
@@ -50,20 +99,36 @@ init(void)
 	 *
 	 * We then enable paging.
 	 */
-	paging_init();
+
+	paging_init(); 
 
 	if (heap_init() < 0) {    // after this, and _only_ after this, we can use the usual kmalloc etc
 		tracef("fatal: failed heap init\n", NULL);
 		for (;;);
 	}
+	
+	if (ramdisk){
+		fs_root = initialise_initrd(initrd_location);
+		tracef("Loaded ramdisk\n",NULL);
+	}
+	else{
+		tracef("Did not load ramdisk",NULL);
+	}
+
 	syscall_init(); // broken
+	
 	require_input(INPUT_BOTH);
 }
 
-void main() {
+
+void main(struct multiboot *mboot_ptr) {
+	
+
 	trace = true;
-	init();
-	trace = true;
+	init(mboot_ptr);
+
+
+	
 	tracef("init successful !\n", NULL);
 	
 	tracef("testing physmem allocation\n", NULL);
@@ -80,7 +145,7 @@ void main() {
 	tracef("> paddr1 [%p]\n", paddr1);
 	tracef("> paddr2 [%p]\n", paddr2);
 	tracef("> paddr3 [%p]\n", paddr3);
-		
+	
 	tracef("testing heap\n", NULL);
 	u32 *heap1 = (u32 *) kmalloc(16);
 	u32 *heap2 = (u32 *) kmalloc(64);
@@ -105,7 +170,7 @@ void main() {
 	tracef("> waited 100 ticks\n", NULL);
 	
 	tracef("testing audio\n", NULL);
-	beep(1000,10);
+	//beep(1000,10);
 
 	tracef("testing page dropping\n", NULL);
 	paddr1 = physmem_alloc();
@@ -123,6 +188,7 @@ void main() {
 	char key[2] = {0};
 	input_read(key,1);
 	logf("\n");
+	
 
 	tracef("Key read: %s\n", key);
 
