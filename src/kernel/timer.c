@@ -10,6 +10,9 @@ static u32 tick = 0;
 extern void 
 timer_callback(regs_t *regs)
 {
+   /* silence unused argument warning */
+   regs = regs;
+
    tick++;
    
     if (tick % 18 == 0)
