@@ -119,7 +119,7 @@ void main() {
 
 	tracef("Press any key ",NULL);
 	char key[2] = {0};
-	input_read(&key,1);
+	input_read(key,1);
 	logf("\n");
 
 	tracef("Key read: %s\n", key);
