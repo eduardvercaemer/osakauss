@@ -8,8 +8,6 @@
 // the frame bitmap for the physical memory
 static struct frame_bitmap frames;
 static u8 map_buffer[0x100];
-// wether the allocator is setup already
-static bool physmem_ready = false;
 
 /* linker */
 extern u32 end;
