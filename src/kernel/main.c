@@ -113,9 +113,11 @@ void main() {
 	paging_kdrop(0x90000000);
 	paging_kdrop(0x90000000);
 	
+	/* currently broken --
 	tracef("testing syscalls\n",NULL);
 	tracef("> syscall output: ",NULL);
 	syscall_log_best_number_ever();
+	*/
 
 	tracef("Press any key ",NULL);
 	char key[2] = {0};
