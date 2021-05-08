@@ -53,7 +53,7 @@ struct heap heap;
 
 static i32 heap_start(struct heap *heap); // done
 static i32 heap_expand(struct heap *heap, u32 sz); // done
-static void heap_contract(struct heap *heap, u32 sz);
+// TODO : static void heap_contract(struct heap *heap, u32 sz);
 static void heap_collapse(struct heap *heap, struct node *node); // done
 static void heap_create_footer(struct node *node); // done
 static struct node *heap_first_node(struct heap *heap); // done
