@@ -100,8 +100,6 @@ heap_start(struct heap *heap)
 static i32
 heap_expand(struct heap *heap, u32 sz)
 {
-	struct node *new;
-
 	if (heap->end + sz - heap->start > HEAP_MAX_SIZE) {
 		tracef("cannot expand, maxed heap at [%d] bytes\n", heap->end - heap->start);
 		return -1;
