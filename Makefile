@@ -21,18 +21,23 @@ OBJS   = $(patsubst $(SRCDIR)/%.c,$(BUILDDIR)/%.o,$(COBJS))
 
 # --------------------------------------------------------------------------- #
 
-.PHONY: all dirs build clean qemu qemu-serial dbg
+.PHONY: all dirs build clean \
+	qemu qemu-serial dbg \
+	build-fsGen build-image-ramdisk build-image \
+	qemu-iso qemu-iso-dbg \
+	qemu-iso-ramdisk qemu-iso-ramdisk-dbg \
+	bochs-iso-ramdisk
 
 all: build
 
 dirs:
-	@mkdir -p $(BUILDDIR)
+	@mkdir -p $(BUILDDIR) $(IMG_DIR)/boot/grub
 	@  cd $(SRCDIR) \
 	&& dirs=$$(find -type d) \
 	&& cd ../$(BUILDDIR) \
 	&& mkdir -p $$dirs
 
-build: $(BUILDDIR)/kernel/kernel
+build: dirs $(BUILDDIR)/kernel/kernel
 
 clean:
 	@rm -rf $(BUILDDIR) *.iso img/boot/*.img img/boot/kernel img/boot/grub/*.cfg $(IMG_DIR) tools/*.img tools/Genfs
@@ -47,24 +52,21 @@ dbg: $(BUILDDIR)/kernel/kernel $(BUILDDIR)/kernel/kernel.dbg
 	@qemu-system-i386 $(QEMU_OPTIONS) -serial stdio -kernel $< -s -S &
 	@sleep 1
 	@gdb -x ./qemu.dbg
+
 build-fsGen:
 	@$(CC) -o ./tools/Genfs ./tools/fsGen.c
-build-img-dir:
-	-@mkdir $(IMG_DIR)
-	-@mkdir $(IMG_DIR)/boot
-	-@mkdir $(IMG_DIR)/boot/grub
-build-image-ramdisk: build-img-dir build build-fsGen
+
+build-image-ramdisk: build build-fsGen
 	@cp $(BUILDDIR)/kernel/kernel $(IMG_DIR)/boot/kernel
 	@cd ./tools && ./Genfs test.txt test.txt && pwd
 	@cp ./tools/initrd.img $(IMG_DIR)/boot/initrd
 	@cp grub/grub-ramdisk.cfg $(IMG_DIR)/boot/grub/grub.cfg
 	@grub-mkrescue -o osakauss.iso $(IMG_DIR)
 
-build-image: build-img-dir build
+build-image: build
 	@cp $(BUILDDIR)/kernel/kernel $(IMG_DIR)/boot/kernel
 	@cp grub/grub.cfg $(IMG_DIR)/boot/grub/grub.cfg
 	@grub-mkrescue -o osakauss.iso $(IMG_DIR)
-
 
 qemu-iso: build-image
 	@qemu-system-i386 $(QEMU_OPTIONS) -serial stdio -cdrom osakauss.iso
@@ -85,12 +87,11 @@ qemu-iso-ramdisk-dbg: build-image-ramdisk $(BUILDDIR)/kernel/kernel.dbg
 bochs-iso-ramdisk: build-image-ramdisk
 	bochs -f bochsrc.txt
 	
-
 # --------------------------------------------------------------------------- #
 
-$(BUILDDIR)/kernel/kernel: dirs $(BUILDDIR)/kernel/kernel.elf
+$(BUILDDIR)/kernel/kernel: $(BUILDDIR)/kernel/kernel.elf
 	@echo -e " [$(OBJCOPY)]\tkernel"
-	@$(OBJCOPY) --strip-unneeded $(BUILDDIR)/kernel/kernel.elf $@
+	@$(OBJCOPY) --strip-unneeded $< $@
 
 $(BUILDDIR)/kernel/kernel.dbg: $(BUILDDIR)/kernel/kernel.elf
 	@echo -e " [$(OBJCOPY)]\tkernel.dbg"
