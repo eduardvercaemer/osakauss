@@ -77,8 +77,9 @@ init(struct multiboot *mboot_ptr)
 	 *
 	 * We then enable paging.
 	 */
-
+	logf("Working before paging");
 	paging_init();
+	logf("Working after paging");
 
 	/*
 	 * Initiaize heap for kmalloc and kfree
