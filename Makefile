@@ -33,7 +33,7 @@ dirs:
 	&& cd ../$(BUILDDIR) \
 	&& mkdir -p $$dirs
 
-build: $(BUILDDIR)/kernel/kernel
+build: dirs $(BUILDDIR)/kernel/kernel
 
 clean:
 	@rm -rf $(BUILDDIR)
@@ -45,13 +45,11 @@ qemu-serial: $(BUILDDIR)/kernel/kernel
 	@qemu-system-i386 $(QEMU_OPTIONS) -display none -serial stdio -kernel $<
 
 dbg: $(BUILDDIR)/kernel/kernel $(BUILDDIR)/kernel/kernel.dbg
-	@qemu-system-i386 $(QEMU_OPTIONS) -serial stdio -kernel $< -s -S &
-	@sleep 1
-	@gdb -x $(SCRIPTS)/qemu.dbg
+	@$(SCRIPTS)/dbg_session.sh
 
 # --------------------------------------------------------------------------- #
 
-$(BUILDDIR)/kernel/kernel: dirs $(BUILDDIR)/kernel/kernel.elf
+$(BUILDDIR)/kernel/kernel: $(BUILDDIR)/kernel/kernel.elf
 	@echo -e " [$(OBJCOPY)]\tkernel"
 	@$(OBJCOPY) --strip-unneeded $(BUILDDIR)/kernel/kernel.elf $@
 
