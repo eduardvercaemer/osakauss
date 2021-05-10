@@ -85,7 +85,20 @@ get_ktable(u32 vaddr, bool create)
 		}
 		
 		// we also need to map this table
-		paging_kmap((u32)table_paddr, (u32)table_vaddr);
+		// we need some special treatment of table 256 since it maps itself
+		if (table_idx == 256) {
+			// this table is for the table map, which is only ever created
+			// during paging_init when we still have paging disabled
+			if (paging_enabled) {
+				tracef("FATAL: paging is enabled\n", NULL);
+				for (;;) ;
+			}
+			memset(table_paddr, 0, 0x1000);
+			paging_kmap((u32)table_paddr, (u32)table_vaddr);
+		} else {
+			paging_kmap((u32)table_paddr, (u32)table_vaddr);
+			memset(table, 0, 0x1000);
+		}
 
 		return table;
 	}
@@ -126,6 +139,7 @@ paging_init(void)
 	
 	tracef("allocating kernel directory\n", NULL);
 	kernel_paddr = physmem_alloc();
+	memset((void *)kernel_paddr, 0, 0x1000);
 	dir = (struct page_d *) kernel_paddr; // we use the paddr since paging isn't on yet
 	tracef("> > paddr [%p]\n", kernel_paddr);
 	tracef("> > vaddr [%p]\n", kernel_directory);
@@ -139,7 +153,7 @@ paging_init(void)
 	tracef("> mapping kernel directory at [%p]\n", kernel_directory);
 	paging_kmap((u32)dir, (u32)kernel_directory);
 	
-	//dump_directory(dir);
+	//paging_dump_directory(dir);
 	//asm volatile("int $3");
 	
 	tracef("> installing page fault handler\n", NULL);
