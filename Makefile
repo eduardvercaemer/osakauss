@@ -1,76 +1,36 @@
-SRCDIR   = ./src
-BUILDDIR = ./build
-SCRIPTS  = ./scripts
+include ./project.mk
 
-# --------------------------------------------------------------------------- #
+OUTDIR := $(BUILDDIR)
 
-CC = gcc
-AS = nasm
-LD = ld
-OBJCOPY = objcopy
-CFLAGS = -std=gnu99 -nostdlib -m32 -ffreestanding -fno-pie -fno-builtin -fno-stack-protector -I./src/include -g -O2 -Wall -Wextra
-LFLAGS = -m elf_i386
-ASFLAGS = -g -f elf32 -I./src/include/assembly
+### ----------------------------------------------------- ###
+
+QEMU      := qemu-system-i386
 QEMU_OPTIONS = -soundhw pcspk -m 4096
 
-# --------------------------------------------------------------------------- #
+### ------------------- kernel -------------------------- ###
 
-COBJS  = $(shell find $(SRCDIR) -name '*.c')
-OBJS   = $(patsubst $(SRCDIR)/%.c,$(BUILDDIR)/%.o,$(COBJS))
-#SOBJS  = $(shell find $(SRCDIR) -name '*.S')
-#OBJS  += $(patsubst $(SRCDIR)/%.S,$(BUILDDIR)/%.S.o,$(SOBJS))
+.PHONY: kernel kernel-dbg
 
-# --------------------------------------------------------------------------- #
+# produce the stripped final kernel binary
+kernel:
+	@$(MAKE) --no-print-directory -C $(MAKEDIR)/kernel
 
-.PHONY: all dirs build clean qemu qemu-serial dbg
+# produce debugging symbols for the kernel
+kernel-dbg:
+	@$(MAKE) kernel-dbg --no-print-directory -C $(MAKEDIR)/kernel
 
-all: build
+.PHONY: dbg qemu serial
 
-dirs:
-	@mkdir -p $(BUILDDIR)
-	@  cd $(SRCDIR) \
-	&& dirs=$$(find -type d) \
-	&& cd ../$(BUILDDIR) \
-	&& mkdir -p $$dirs
-
-build: dirs $(BUILDDIR)/kernel/kernel
-
-clean:
-	@rm -rf $(BUILDDIR)
-
-qemu: build
-	@qemu-system-i386 $(QEMU_OPTIONS) -serial stdio -kernel $(BUILDDIR)/kernel/kernel
-
-qemu-serial: build
-	@qemu-system-i386 $(QEMU_OPTIONS) -display none -serial stdio -kernel $(BUILDDIR)/kernel/kernel
-
-dbg: build $(BUILDDIR)/kernel/kernel.dbg
+# start a simple debugging session in a tmux environment
+dbg: kernel kernel-dbg
 	@$(SCRIPTS)/dbg_session.sh
 
-# --------------------------------------------------------------------------- #
+# start the kernel in qemu
+qemu: kernel
+	@$(QEMU) $(QEMU_OPTIONS) -kernel $(BUILDDIR)/kernel/kernel_stripped
 
-$(BUILDDIR)/kernel/kernel: $(BUILDDIR)/kernel/kernel.elf
-	@echo -e " [$(OBJCOPY)]\tkernel"
-	@$(OBJCOPY) --strip-unneeded $(BUILDDIR)/kernel/kernel.elf $@
+# start the kernel in console with serial
+serial: kernel
+	@$(QEMU) $(QEMU_OPTIONS) -serial stdio -display none -kernel $(BUILDDIR)/kernel/kernel_stripped
 
-$(BUILDDIR)/kernel/kernel.dbg: $(BUILDDIR)/kernel/kernel.elf
-	@echo -e " [$(OBJCOPY)]\tkernel.dbg"
-	@$(OBJCOPY) --only-keep-debug $< $@
-
-$(BUILDDIR)/kernel/kernel.elf: $(OBJS)
-	@echo -e " [$(AS)]\tboot.S.o"
-	@$(AS) $(ASFLAGS) -o $(BUILDDIR)/kernel/boot.S.o $(SRCDIR)/kernel/boot.S
-	@echo -e " [$(LD)]\tkernel.elf"
-	@$(LD) $(LFLAGS) -T $(SRCDIR)/kernel/linker.ld -o $(BUILDDIR)/kernel/kernel.elf $(OBJS) $(BUILDDIR)/kernel/boot.S.o
-
-# --------------------------------------------------------------------------- #
-
-#$(BUILDDIR)/%.S.o: $(SRCDIR)/%.S
-#	@echo -e " [$(AS)]\t$(notdir $@)"
-#	@$(AS) -f elf32 $(ASFLAGS) -o $@ $<
-
-$(BUILDDIR)/%.o: $(SRCDIR)/%.c
-	@echo -e " [$(CC)]\t$(notdir $@)"
-	@$(CC) $(CFLAGS) -o $@ -c $<
-
-# --------------------------------------------------------------------------- #
+include $(PROJECT)/rules.mk

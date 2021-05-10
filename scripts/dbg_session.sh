@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # begin a debugging session in tmux
 qemu_opts='-soundhw pcspk -m 4096'
-kernel='./build/kernel/kernel'
+kernel='./build/kernel/kernel_stripped'
 gdb_script='./scripts/qemu.dbg'
 
 tmux new -s dbg -d
