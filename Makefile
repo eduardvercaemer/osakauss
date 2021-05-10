@@ -38,13 +38,13 @@ build: dirs $(BUILDDIR)/kernel/kernel
 clean:
 	@rm -rf $(BUILDDIR)
 
-qemu: $(BUILDDIR)/kernel/kernel
-	@qemu-system-i386 $(QEMU_OPTIONS) -serial stdio -kernel $<
+qemu: build
+	@qemu-system-i386 $(QEMU_OPTIONS) -serial stdio -kernel $(BUILDDIR)/kernel/kernel
 
-qemu-serial: $(BUILDDIR)/kernel/kernel
-	@qemu-system-i386 $(QEMU_OPTIONS) -display none -serial stdio -kernel $<
+qemu-serial: build
+	@qemu-system-i386 $(QEMU_OPTIONS) -display none -serial stdio -kernel $(BUILDDIR)/kernel/kernel
 
-dbg: $(BUILDDIR)/kernel/kernel $(BUILDDIR)/kernel/kernel.dbg
+dbg: build $(BUILDDIR)/kernel/kernel.dbg
 	@$(SCRIPTS)/dbg_session.sh
 
 # --------------------------------------------------------------------------- #
