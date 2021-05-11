@@ -15,16 +15,21 @@
 #include <kernel/multiboot.h>
 #include <kernel/drivers/fs.h>
 #include <kernel/drivers/initrd.h>
+#include <kernel/stivale2.h>
+
+
+static void GDTInit();
+
 
 const u32 magic = 0xdeadbeef;
-
+GDTDescriptor *gdtDescriptor;
 
 
 static void
-init(struct multiboot *mboot_ptr)
+init()
 {
 	trace = false;
-	gdt_init();
+	GDTInit();
 	require_log(LOG_BOTH);
 	
 	logf("   ...:::   osakauss v0.0.0  :::...\n\n");
@@ -37,6 +42,7 @@ init(struct multiboot *mboot_ptr)
 	timer_init(100);
 
 	/* can not be after any of memory management is setup because it will cause a memory fault */
+	/*
 	bool ramdisk = (mboot_ptr->mods_count > 0);
 	u32 placement_address;
 	u32 initrd_location;
@@ -56,7 +62,7 @@ init(struct multiboot *mboot_ptr)
 	} else {
 		tracef("No ramdisk to load\n",NULL);
 	}
-	
+	*/
 	/*
 	 * First step is to initialize the physmem bookkeeper. This uses a small
 	 * bitmap to keep track of physical frame usage.
@@ -88,7 +94,7 @@ init(struct multiboot *mboot_ptr)
 		tracef("fatal: failed heap init\n", NULL);
 		for (;;);
 	}
-	
+	/*
 	if (ramdisk) {
 		tracef("> WE ARE RIGHT BEFORE INITRD\n", NULL);
 		fs_root = initialise_initrd(initrd_location); // this is where it breaks. 
@@ -96,15 +102,15 @@ init(struct multiboot *mboot_ptr)
 	} else {
 		tracef("Did not load ramdisk",NULL);
 	}
-
+*/
 	syscall_init(); // broken
 	
 	require_input(INPUT_BOTH);
 }
 
 
-void main(struct multiboot *mboot_ptr) {	
-	init(mboot_ptr);
+void main(struct stivale2_struct *stivale2_struct) {
+	init();
 
 	trace = true;
 	tracef("init successful !\n", NULL);
@@ -188,4 +194,15 @@ void main(struct multiboot *mboot_ptr) {
 
 	//loops forever
     for (;;);
+}
+
+
+
+
+
+
+static void GDTInit(){
+	gdtDescriptor->Size = sizeof(GDT) - 1;
+	gdtDescriptor->Offset =  (u64)&DefaultGDT;
+	LoadGDT(gdtDescriptor);
 }

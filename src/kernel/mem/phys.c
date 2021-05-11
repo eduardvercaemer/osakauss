@@ -10,11 +10,11 @@ static struct frame_bitmap frames;
 static u8 map_buffer[0x100];
 
 /* linker */
-extern u32 end;
+extern u64 end;
 
 /* exports */
 
-u32 physmem_base = (u32) &end;
+u64 physmem_base = (u64) &end;
 
 extern void
 physmem_init(void)
@@ -49,7 +49,7 @@ physmem_alloc(void)
 }
 
 extern void
-physmem_free(u32 paddr)
+physmem_free(u64 paddr)
 {
 	tracef("freeing p[%p]\n", paddr);
 	u32 frame = (paddr - physmem_base) / 0x1000;

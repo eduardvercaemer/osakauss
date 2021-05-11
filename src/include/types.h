@@ -1,5 +1,5 @@
 #pragma once
-
+#include <stdint.h>
 typedef unsigned char       u8;
 typedef char                i8;
 typedef unsigned short      u16;

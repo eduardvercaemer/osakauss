@@ -41,24 +41,9 @@ syscall_handle(regs_t *r){
    // Get the required syscall location.
    void *location = SYS_CALLS[r->int_no];
 
-   // We don't know how many parameters the function wants, so we just
-   // push them all onto the stack in the correct order. The function will
-   // use all the parameters it wants, and we can pop them all back off afterwards.
-   int ret;
-   asm volatile (" \
-     push %1; \
-     push %2; \
-     push %3; \
-     push %4; \
-     push %5; \
-     call *%6; \
-     pop %%ebx; \
-     pop %%ebx; \
-     pop %%ebx; \
-     pop %%ebx; \
-     pop %%ebx; \
-   " : "=a" (ret) : "r" (r->edi), "r" (r->esi), "r" (r->edx), "r" (r->ecx), "r" (r->ebx), "r" (location));
-   r->eax = ret;   
+   int (*fnptr)(u64 a, u64 b, u64 c, u64 d, u64 e) = (void *)location;
+
+    int ret = fnptr(r->rdi, r->rsi, r->rdx, r->rcx, r->rbx);
 }
 
 extern void

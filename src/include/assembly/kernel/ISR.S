@@ -1,4 +1,4 @@
-
+[BITS 64]
 global isr0
 global isr1
 global isr2
@@ -36,161 +36,161 @@ global idt_flush
 
 isr0:
   cli                 
-  push byte 0         
-  push byte 0         
+  push  0         
+  push  0         
   jmp isr_common_stub
 isr1:
   cli                 
-  push byte 0         
-  push byte 1        
+  push  0         
+  push  1        
   jmp isr_common_stub 
 isr2:
   cli                 
-  push byte 0         
-  push byte 2         
+  push  0         
+  push  2         
   jmp isr_common_stub 
 isr3:
   cli                 
-  push byte 0         
-  push byte 3        
+  push  0         
+  push  3        
   jmp isr_common_stub 
 isr4:
   cli                 
-  push byte 0         
-  push byte 4         
+  push  0         
+  push  4         
   jmp isr_common_stub 
 isr5:
   cli                
-  push byte 0         
-  push byte 5         
+  push  0         
+  push  5         
   jmp isr_common_stub 
 isr6:
   cli                 
-  push byte 0         
-  push byte 6         
+  push  0         
+  push  6         
   jmp isr_common_stub 
 isr7:
   cli                 
-  push byte 0         
-  push byte 7         
+  push  0         
+  push  7         
   jmp isr_common_stub 
 isr8:
   cli                
-  push byte 8         
+  push  8         
   jmp isr_common_stub 
 isr9:
   cli                 
-  push byte 0         
-  push byte 9         
+  push  0         
+  push  9         
   jmp isr_common_stub
 isr10:
   cli                 
-  push byte 10         
+  push  10         
   jmp isr_common_stub
  isr11:
   cli                 
-  push byte 11        
+  push  11        
   jmp isr_common_stub
 isr12:
   cli                 
-  push byte 12        
+  push  12        
   jmp isr_common_stub 
 isr13:
   cli                 
-  push byte 13        
+  push  13        
   jmp isr_common_stub 
 isr14:
   cli                 
-  push byte 14         
+  push  14         
   jmp isr_common_stub 
 isr15:
   cli                 
-  push byte 0         
-  push byte 15         
+  push  0         
+  push  15         
   jmp isr_common_stub 
 isr16:
   cli                 
-  push byte 0         
-  push byte 16         
+  push  0         
+  push  16         
   jmp isr_common_stub 
 isr17:
   cli                 
-  push byte 0         
-  push byte 17         
+  push  0         
+  push  17         
   jmp isr_common_stub 
 isr18:
   cli                 
-  push byte 0         
-  push byte 18         
+  push  0         
+  push  18         
   jmp isr_common_stub 
 isr19:
   cli                 
-  push byte 0         
-  push byte 19         
+  push  0         
+  push  19         
   jmp isr_common_stub 
 isr20:
   cli                 
-  push byte 0         
-  push byte 20         
+  push  0         
+  push  20         
   jmp isr_common_stub 
 isr21:
   cli                 
-  push byte 0         
-  push byte 21         
+  push  0         
+  push  21         
   jmp isr_common_stub 
 isr22:
   cli                 
-  push byte 0         
-  push byte 22         
+  push  0         
+  push  22         
   jmp isr_common_stub 
 isr23:
   cli                 
-  push byte 0         
-  push byte 23        
+  push  0         
+  push  23        
   jmp isr_common_stub 
 isr24:
   cli                 
-  push byte 0         
-  push byte 24         
+  push  0         
+  push  24         
   jmp isr_common_stub 
 isr25:
   cli                 
-  push byte 0         
-  push byte 25         
+  push  0         
+  push  25         
   jmp isr_common_stub
 isr26:
   cli                 
-  push byte 0         
-  push byte 26         
+  push  0         
+  push  26         
   jmp isr_common_stub 
 isr27:
   cli                 
-  push byte 0         
-  push byte 27        
+  push  0         
+  push  27        
   jmp isr_common_stub 
 isr28:
   cli                 
-  push byte 0        
-  push byte 28         
+  push  0        
+  push  28         
   jmp isr_common_stub 
 isr29:
   cli                 
-  push byte 0         
-  push byte 29         
+  push  0         
+  push  29         
   jmp isr_common_stub 
 isr30:
   cli                 
-  push byte 0         
-  push byte 30         
+  push  0         
+  push  30         
   jmp isr_common_stub 
 isr31:
   cli                 
-  push byte 0         
-  push byte 31         
+  push  0         
+  push  31         
   jmp isr_common_stub
 isr128:
   cli                 
-  push byte 0         
+  push  0         
   push 128     
   jmp isr_common_stub
 
@@ -198,28 +198,13 @@ extern fault_handler
 
 
 isr_common_stub:
-    pusha
-    push ds
-    push es
-    push fs
-    push gs
-    mov ax, 0x10  
-    mov ds, ax
-    mov es, ax
-    mov fs, ax
-    mov gs, ax
-    mov eax, esp   
-    push eax
-    mov eax, fault_handler
-    call eax       
-    pop eax
-    pop gs
-    pop fs
-    pop es
-    pop ds
-    popa
-    add esp, 8     
-    iret
+    cld ; clears all the Direction Flag
+    pusha64
+    mov rdi, rsp
+    call irq_handler
+    popa64
+    add rsp, 16
+    iretq
 
 idt_flush:
    mov eax, [esp+4]  

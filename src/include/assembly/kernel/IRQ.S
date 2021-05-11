@@ -1,3 +1,4 @@
+[BITS 64]
 global irq0
 global irq1
 global irq2
@@ -14,6 +15,8 @@ global irq12
 global irq13
 global irq14
 global irq15
+
+
 
 
 
@@ -149,25 +152,10 @@ extern irq_handler
 
 
 irq_common_stub:
-    pusha
-    push ds
-    push es
-    push fs
-    push gs
-    mov ax, 0x10
-    mov ds, ax
-    mov es, ax
-    mov fs, ax
-    mov gs, ax
-    mov eax, esp
-    push eax
-    mov eax, irq_handler
-    call eax
-    pop eax
-    pop gs
-    pop fs
-    pop es
-    pop ds
-    popa
-    add esp, 8
-    iret
+    cld ; clears all the Clear Direction Flag
+    pusha64
+    mov rdi, rsp
+    call irq_handler
+    popa64
+    add rsp, 16
+    iretq

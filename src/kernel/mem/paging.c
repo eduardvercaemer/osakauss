@@ -30,11 +30,11 @@ map_page(struct page *page, u32 frame, bool is_kernel, bool is_writeable)
  * given the paddr of a paging directory, enable it
  */
 static void
-paging_switch_dir_paddr(u32 dir_paddr)
+paging_switch_dir_paddr(u64 dir_paddr)
 {
 	tracef("directory [%p]\n", dir_paddr);
 	asm volatile("mov %0, %%cr3":: "r"(dir_paddr));
-	u32 cr0;
+	u64 cr0;
 	asm volatile("mov %%cr0, %0": "=r"(cr0));
 	cr0 |= 0x80000000; // Enable paging!
 	asm volatile("mov %0, %%cr0":: "r"(cr0));
@@ -58,7 +58,7 @@ get_kdir(void)
  * Optionally, create if doesn't exist.
  */
 static struct page_t *
-get_ktable(u32 vaddr, bool create)
+get_ktable(u64 vaddr, bool create)
 {
 	struct page_d *dir;
 	struct page_t *table, *table_paddr, *table_vaddr;
@@ -168,7 +168,7 @@ paging_init(void)
  * used to map kernel pages, once paging is enabled
  */
 extern void
-paging_kmap(u32 paddr, u32 vaddr)
+paging_kmap(u64 paddr, u64 vaddr)
 {
 	struct page *page;
 
@@ -177,7 +177,7 @@ paging_kmap(u32 paddr, u32 vaddr)
 }
 
 extern void
-paging_kdrop(u32 vaddr)
+paging_kdrop(u64 vaddr)
 {
 	struct page *page;
 
@@ -194,7 +194,7 @@ paging_kdrop(u32 vaddr)
 }
 
 extern bool
-paging_vaddr_get_kmap(u32 vaddr, u32 *frame)
+paging_vaddr_get_kmap(u64 vaddr, u32 *frame)
 {
 	struct page_d *dir;
 	struct page_t *table;
@@ -232,7 +232,7 @@ paging_page_fault(regs_t *r)
 {
 	// A page fault has occurred.
 	// The faulting address is stored in the CR2 register.
-	u32 faulting_address;
+	u64 faulting_address;
 	asm volatile("mov %%cr2, %0" : "=r" (faulting_address));
 	
 	// The error code gives us details of what happened.

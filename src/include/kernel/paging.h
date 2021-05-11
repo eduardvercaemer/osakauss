@@ -40,17 +40,17 @@ extern void paging_init(void);
 /*
  * Map the kernel vaddr to the specified paddr
  */
-extern void paging_kmap(u32 paddr, u32 vaddr);
+extern void paging_kmap(u64 paddr, u64 vaddr);
 
 /*
  * Drop a kernel mapping with specified vaddr
  */
-extern void paging_kdrop(u32 vaddr);
+extern void paging_kdrop(u64 vaddr);
 
 /*
  * Check wether a vaddr is mapped in the kernel directory
  */
-extern bool paging_vaddr_get_kmap(u32 vaddr, u32 *frame);
+extern bool paging_vaddr_get_kmap(u64 vaddr, u32 *frame);
 
 /*
  * Handler for page faults.
