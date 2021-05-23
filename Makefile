@@ -7,8 +7,8 @@ CC = gcc
 AS = nasm
 LD = ld
 OBJCOPY = objcopy
-CFLAGS = -std=gnu99 -nostdlib -m64 -ffreestanding -fno-pie -fno-builtin -fno-stack-protector -I./src/include -g -O0 -Wall -Wextra -mcmodel=kernel
-LFLAGS = -m elf_x86_64
+CFLAGS = -std=gnu99 -nostdlib -m64 -ffreestanding -fno-builtin -fno-stack-protector -fno-pic -fno-pie  -I./src/include -g -O2 -Wall -Wextra -mno-80387 -mno-mmx  -mno-3dnow -mno-sse -mno-sse2 -mno-red-zone
+LFLAGS = -m64 -nostdlib -z max-page-size=0x1000 -fno-pic -fno-pie
 ASFLAGS = -g -f elf64 -I./src/include/assembly
 QEMU_OPTIONS = -soundhw pcspk -m 4096
 IMG_DIR=img
@@ -102,7 +102,7 @@ $(BUILDDIR)/kernel/kernel.elf: $(OBJS)
 	@$(AS) $(ASFLAGS) -o $(BUILDDIR)/kernel/boot.S.o $(SRCDIR)/kernel/boot.S
 
 	@echo -e " [$(LD)]\tkernel.elf"
-	@$(LD) $(LFLAGS) -T $(SRCDIR)/kernel/linker.ld -o $(BUILDDIR)/kernel/kernel.elf $(OBJS) $(BUILDDIR)/kernel/boot.S.o
+	$(CC) $(LFLAGS) -T $(SRCDIR)/kernel/linker.ld -o $(BUILDDIR)/kernel/kernel.elf $(OBJS) $(BUILDDIR)/kernel/boot.S.o
 
 # --------------------------------------------------------------------------- #
 
