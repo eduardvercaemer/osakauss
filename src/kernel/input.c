@@ -1,9 +1,9 @@
-#include <kernel/serial.h>
+#include <kernel/drivers/serial.h>
 #include <kernel/input.h>
 #include <types.h>
 #include <kernel/log.h>
 #include <stdlib.h>
-#include <kernel/drivers/kb.h>
+//#include <kernel/drivers/kb.h>
 
 #define BUFFER_SIZE 2000 // size of tty screen 80*25
 
@@ -79,7 +79,7 @@ require_input(enum input option){
 			require_satisfied.serial = 1;
 			return 1;
 		case INPUT_KEYBOARD:
-            require_keyboard();
+            //require_keyboard();
             require_satisfied.keyboard = 1;
             return 1;
 		case INPUT_BOTH:
@@ -88,7 +88,7 @@ require_input(enum input option){
                 require_satisfied.serial = 1;
             }
             if (!require_satisfied.keyboard) {
-                require_keyboard();
+                //require_keyboard();
                 require_satisfied.keyboard =  1;  
             }
             return 1;
