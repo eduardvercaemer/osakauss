@@ -1,26 +1,15 @@
 #pragma once
-#include <kernel/ISR.h>
-
-extern void irq0();
-extern void irq1();
-extern void irq2();
-extern void irq3();
-extern void irq4();
-extern void irq5();
-extern void irq6();
-extern void irq7();
-extern void irq8();
-extern void irq9();
-extern void irq10();
-extern void irq11();
-extern void irq12();
-extern void irq13();
-extern void irq14();
-extern void irq15();
-
-extern void install_handler(int irq, void (*handler)(regs_t *r));
-extern void uninstall_handler(int irq);
-
-extern void irq_init();
+#include <types.h>
 
 
+
+struct regs
+{
+	u64 r15; u64 r14; u64 r13; u64 r12; u64 r11; u64 r10;u64 r9; u64 r8;
+	u64 rbp; u64 rdi; u64 rsi; u64 rdx; u64 rcx; u64 rbx; u64 rax;
+
+	u64 interrupt;
+	u64  error;
+
+	u64  rip; u64 cs; u64 flags; u64 rsp; u64 ss;
+}__attribute__((packed));

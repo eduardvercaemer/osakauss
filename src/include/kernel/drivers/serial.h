@@ -1,6 +1,6 @@
 #pragma once
 #include <types.h>
-#include <stdlib.h>
+#include <libs/stdlib.h>
 
 /* kernel/serial.c */
 

@@ -1,6 +1,5 @@
 #include <types.h>
-#include <stdlib.h>
-#include <kernel/log.h>
+#include <libs/stdlib.h>
 
 char * itoa( int value, char * str, int base )
 {
@@ -102,38 +101,4 @@ int memcmp(const void* aptr, const void* bptr, usize size) {
 			return 1;
 	}
 	return 0;
-}
-void strcpy(char dest[], const char source[])
-{
-    int i = 0;
-    while (1)
-    {
-        dest[i] = source[i];
-
-        if (dest[i] == '\0')
-        {
-            break;
-        }
-
-        i++;
-    } 
-}
-bool strcmp(char dest[], const char source[]){
-  int i = 0;
-    while (1)
-    {
-        if (dest[i] == source[i]){
-
-        }
-        else{
-          return false;
-        }
-
-        if (dest[i] == '\0')
-        {
-            return true;
-        }
-
-        i++;
-    } 
 }

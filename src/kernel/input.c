@@ -2,8 +2,8 @@
 #include <kernel/input.h>
 #include <types.h>
 #include <kernel/log.h>
-#include <stdlib.h>
-//#include <kernel/drivers/kb.h>
+#include <libs/stdlib.h>
+#include <kernel/drivers/kb.h>
 
 #define BUFFER_SIZE 2000 // size of tty screen 80*25
 
@@ -39,12 +39,19 @@ input_read(char *buf,int size)
         int char_read = 0;
         while(char_read < size) {
             char c = read_key_buffer(true);
+            if (c != '\b'){
+                *buf = c;
+                buf++;
+                char_read++; 
+            }
+            else{
+                --buf;
+                --char_read; 
+            }
             if(c == 0) {
                 return char_read;
             }
-            *buf = c;
-            buf++;
-            char_read++; 
+            
             
         }
         return char_read;
@@ -65,6 +72,10 @@ key_buffer_append(char c) {
         key_buffer.w = 0;
         key_buffer.r = 0;
     }
+    if (c == '\b'){
+        --key_buffer.w;
+        --key_buffer.r;
+    }
     key_buffer.buf[key_buffer.w] = c;
     key_buffer.w = (key_buffer.w + 1) % BUFFER_SIZE;
     return;
@@ -79,7 +90,7 @@ require_input(enum input option){
 			require_satisfied.serial = 1;
 			return 1;
 		case INPUT_KEYBOARD:
-            //require_keyboard();
+            require_keyboard();
             require_satisfied.keyboard = 1;
             return 1;
 		case INPUT_BOTH:
@@ -88,7 +99,7 @@ require_input(enum input option){
                 require_satisfied.serial = 1;
             }
             if (!require_satisfied.keyboard) {
-                //require_keyboard();
+                require_keyboard();
                 require_satisfied.keyboard =  1;  
             }
             return 1;
@@ -96,10 +107,6 @@ require_input(enum input option){
 			return 0;
     }
 }
-
-
-
-
 
 
 

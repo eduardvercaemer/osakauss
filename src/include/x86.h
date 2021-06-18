@@ -1,10 +1,5 @@
 #pragma once
 #include <types.h>
-#include <kernel/log.h>
-#include <stdlib.h>
-
-
-#define PANIC(msg) panic(msg, __FILE__, __LINE__);
 
 
 static inline u8 
@@ -69,17 +64,7 @@ hang(void)
 	for (;;) ;
 }
 
-static inline void 
-panic(const char *message, const char *file, u32 line)
-{
-    cli();
-    
-    static char b[33];
 
-    logf("PANIC( %s ) at %s:%s\n",message,file,itoa(line,b,10));
-    
-    hang();
-}
 static inline void
 reboot_system(){
   for (;;){
@@ -92,4 +77,8 @@ reboot_system(){
 		}
 		outb(0x64, 0xfe);
 	}
+}
+static inline
+void IOWait(){
+  outb(0x80,0x00);
 }

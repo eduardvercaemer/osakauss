@@ -1,5 +1,6 @@
 [bits 64]
-section .text
+
+
 GLOBAL LoadGDT
 LoadGDT:   
     lgdt [rdi]

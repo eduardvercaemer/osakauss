@@ -1,4 +1,4 @@
-[BITS 64]
+[biTs 64]
 global isr0
 global isr1
 global isr2
@@ -31,8 +31,50 @@ global isr28
 global isr29
 global isr30
 global isr31 
-global isr128
 global idt_flush
+
+%macro pusha64 0
+
+push rax
+push rbx
+push rcx
+push rdx
+push rsi
+push rdi
+push rbp
+push r8
+push r9
+push r10
+push r11
+push r12
+push r13
+push r14
+push r15
+
+%endmacro
+
+%macro popa64 0
+
+pop r15
+pop r14
+pop r13
+pop r12
+pop r11
+pop r10
+pop r9
+pop r8
+pop rbp
+pop rdi
+pop rsi
+pop rdx
+pop rcx
+pop rbx
+pop rax
+
+%endmacro
+
+
+
 
 isr0:
   cli                 
@@ -188,25 +230,14 @@ isr31:
   push  0         
   push  31         
   jmp isr_common_stub
-isr128:
-  cli                 
-  push  0         
-  push 128     
-  jmp isr_common_stub
 
 extern fault_handler
 
-
 isr_common_stub:
-    cld ; clears all the Direction Flag
+    cld ; clears all the direction Flag
     pusha64
     mov rdi, rsp
-    call irq_handler
+    call fault_handler
     popa64
     add rsp, 16
     iretq
-
-idt_flush:
-   mov eax, [esp+4]  
-   lidt [eax]        
-   ret

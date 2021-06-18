@@ -1,6 +1,19 @@
 #pragma once
 #include <types.h>
 
-/* kernel/IDT.c */
-extern void idt_set_gate(u8 num, unsigned long base, u16 sel, u8 flags);
-extern void idt_init(void);
+struct IDT{
+  u16 offset_low;
+  u16 selector;
+  u8 ist;
+  u8 types_attr;
+  u16 offset_mid;
+  u32 offset_high;
+  u32 reserved;
+}__attribute__((packed));
+
+struct IDTPtr {
+    u16 limit;
+    u64 base;
+}__attribute((packed));
+
+bool IDTInit();

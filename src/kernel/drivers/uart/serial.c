@@ -1,9 +1,9 @@
 #include <x86.h>
-#include <kernel/serial.h>
+#include <kernel/drivers/serial.h>
 #include <kernel/ISR.h>
 #include <kernel/IRQ.h>
 #include <kernel/log.h>
-#include <stdlib.h>
+#include <libs/stdlib.h>
 #include <kernel/input.h>
 #define PORT_COM1 0x03f8
 
@@ -25,7 +25,7 @@ is_transmit_empty(void)
 	return inb(PORT_COM1 + 5) & 0x20;
 }
 
-extern void handle_serial_in(regs_t *r)
+extern void handle_serial_in(struct regs *r)
 {
 	/* silence unused arg warning */
 	r = r;

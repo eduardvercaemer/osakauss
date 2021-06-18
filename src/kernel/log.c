@@ -1,8 +1,8 @@
 #include <kernel/log.h>
-#include <kernel/serial.h>
-#include <kernel/console.h>
-#include <lambda.h>
-#include <stdlib.h>
+#include <kernel/drivers/serial.h>
+#include <kernel/drivers/console.h>
+#include <libs/lambda.h>
+#include <libs/stdlib.h>
 
 static struct {
 	u8 serial;  // serial logging enabled
@@ -24,11 +24,11 @@ require_log(enum logging_output output)
 			return 1;
 		case LOG_CONSOLE:
 			if (require_satisfied.console) return 1;
-			if (!require_console()) return 0;
+			if (!console_require()) return 0;
 			require_satisfied.console = 1;
 			return 1;
 		case LOG_BOTH:
-			return require_log(LOG_SERIAL) && require_log(LOG_CONSOLE);
+			return require_log(LOG_CONSOLE);
 		default:
 			return 0;
 	}
@@ -42,7 +42,7 @@ logf(const char *fmt, ...)
 	va_start(args, fmt);
 	void (*f)(char) = lambda(void, (char c) {
 		if (require_satisfied.console)
-			console_putch(c);
+			putch(c);
 		if (require_satisfied.serial)
 			serial_writeb(c);
 	});
