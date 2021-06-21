@@ -119,8 +119,14 @@ void putch(char c)
 		
 		}
 		else{
-			
-				if (console.barrier >= console.offset);
+				if (console.barrier == 0){
+					--console.column;
+					--console.offset;
+					putch(' ');
+					--console.column;
+					--console.offset;
+				}
+				else if (console.barrier >= console.offset);
 				else{
 					--console.column;
 					--console.offset;
@@ -196,7 +202,12 @@ MVCURSORC(int i){ // what it means: 'move cursor column'.
 	update_cursor();
 }
 extern void
-SetBarrier(){
+SetBarrier(){ //  set barrier
 	console.barrier = console.offset;
+	return;
+}
+extern void
+RemBarrier(){ // remove barrier
+	console.barrier = 0;
 	return;
 }

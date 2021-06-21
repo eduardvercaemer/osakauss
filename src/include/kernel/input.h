@@ -9,3 +9,4 @@ extern int require_input(enum input option);
 extern int input_read(char *,int);
 extern void key_buffer_append(char c);
 extern char read_key_buffer(bool);
+extern int input_readln(char *buf);

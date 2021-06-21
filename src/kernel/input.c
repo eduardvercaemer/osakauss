@@ -65,7 +65,48 @@ input_read(char *buf,int size)
         return 0;
     }
 }
-
+extern int 
+input_readln(char *buf)
+{
+    if (require_satisfied.keyboard || require_satisfied.serial){
+        SetBarrier();
+        int char_read = 0;
+        while (1==1) {
+            char c = read_key_buffer(true);
+            if (c != '\b'){
+                if (c == '\n'){
+                    RemBarrier();
+                    return char_read;
+                }
+                *buf = c;
+                buf++;
+                char_read++; 
+            }
+            else{
+                
+                if (char_read == 0); // make sure that we're going past where we started
+                else{
+                    *buf = 0;
+                    --buf;
+                    --char_read; 
+                }
+                
+            }
+            if(c == 0) {
+                RemBarrier();
+                return char_read;
+            }
+            
+            
+        }
+        RemBarrier();
+        return char_read;
+    }
+    else{
+        RemBarrier();
+        return 0;
+    }
+}
 
 extern void 
 key_buffer_append(char c) {

@@ -66,11 +66,12 @@ void *stivale2_get_tag(struct stivale2_struct *stivale2_struct, uint64_t id) {
 
 void main(struct stivale2_struct *stivale2_struct) {
     init(stivale2_struct);
-    char buf[3] = {0};
+    char * buf;
     logf("input > ");
-    SetBarrier();
-    input_read(&buf, 2);
-    logf("\nyou input: %s\n", buf);
+    input_readln(buf);
+
+    logf("\ninput = %s\n",buf);
+    
     for (;;){
         asm volatile("hlt");
     }

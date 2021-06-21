@@ -10,3 +10,4 @@ bool console_require();
 extern void MVCURSORC(int);
 
 extern void SetBarrier();
+extern void RemBarrier();
