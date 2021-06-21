@@ -2,13 +2,7 @@
 #include <types.h>
 #include <libs/stdlib.h>
 #include <x86.h>
-
-static const u32 VGA_WIDTH = 80;
-static const u32 VGA_HEIGHT = 25;
-static u32 terminal_row;
-static u32 terminal_column;
-static u8 terminal_color;
-static u16 * terminal_buffer;
+#include <kernel/drivers/console.h>
 
 
 static void  init_cursor(void);
@@ -16,7 +10,27 @@ static void  init_cursor(void);
 static void enable_cursor(void);
 
 
-static void update_cursor(int x, int y);
+static void update_cursor();
+
+
+struct Sconsole{
+	u32 offset;
+	u32 barrier;
+	u16 * buffer;
+	u8 color;
+	u32 column;
+	u32 row;
+	u32 width;
+	u32 height;
+	u32 crws; // means: current read and write status
+};
+
+
+static struct Sconsole console = {
+	.barrier = 0,
+	.offset = 0,
+};  
+
 
 
 static enum colours {
@@ -52,60 +66,70 @@ static inline uint16_t vga_entry(unsigned char uc, uint8_t color)
 static void
 scroll(void)
 {
-	u16 blank = vga_entry(' ',terminal_color);
-	if(terminal_row >= 25)
+	u16 blank = vga_entry(' ',console.color);
+	if(console.row >= 25)
 	{
 		int i;
 		for (i = 0*80; i < 24*80; i++)
 		{
-			terminal_buffer[i] = terminal_buffer[i+80];
+			console.buffer[i] = console.buffer[i+80];
 		}
 		for (i = 24*80; i < 25*80; i++)
 		{
-			terminal_buffer[i] = blank;
+			console.buffer[i] = blank;
 		}
-		terminal_row = 24;
-		update_cursor(terminal_column,terminal_row);
+		console.row = 24;
+		update_cursor(console.column,console.row);
 	}
 	
 }
 
 bool console_require() 
 {
-	terminal_row = 0;
-	terminal_column = 0;
-	terminal_color = vga_entry_color(VGA_COLOR_LIGHT_GREY, VGA_COLOR_BLACK);
-	terminal_buffer = (uint16_t*) 0xB8000;
+	console.height = 25;
+	console.width = 80;
+	console.row = 0;
+	console.column = 0;
+	console.color = vga_entry_color(VGA_COLOR_LIGHT_GREY, VGA_COLOR_BLACK);
+	console.buffer = (uint16_t*) 0xB8000;
 	init_cursor();
-	for (u32 y = 0; y < VGA_HEIGHT; y++) {
-		for (u32 x = 0; x < VGA_WIDTH; x++) {
-			const u32 index = y * VGA_WIDTH + x;
-			terminal_buffer[index] = vga_entry(' ', terminal_color);
+	for (u32 y = 0; y < console.height; y++) {
+		for (u32 x = 0; x < console.width; x++) {
+			const u32 index = y * console.width + x;
+			console.buffer[index] = vga_entry(' ', console.color);
 		}
 	}
 }
 
 
-static void putchat(char c, u8 color, u32 x, u32 y){
-    const u32 index = y * VGA_WIDTH + x;
-	terminal_buffer[index] = vga_entry(c, color);
+static void putchat(char c, u8 color, u32 x, u32 y){ // meaning: put char at ( this puts a char a postion entered)
+    const u32 index = y * console.width + x;
+	console.buffer[index] = vga_entry(c, color);
 }
 
 void putch(char c) 
 {
 	if (c == '\n'){
-		++terminal_row;
-		terminal_column=0;
+		++console.row;
+		console.column=0;
 	}
 	
 	else if (c == '\b'){
-		if (terminal_column == 0){
+		if (console.column == 0){
 		
 		}
 		else{
-			--terminal_column;
-			putch(' ');
-			--terminal_column;
+			
+				if (console.barrier >= console.offset);
+				else{
+					--console.column;
+					--console.offset;
+					putch(' ');
+					--console.column;
+					--console.offset;
+					
+				}
+			
 		}
 		
 	}
@@ -115,15 +139,16 @@ void putch(char c)
 		}
 	}
 	else if (c == '\r'){
-		terminal_column=0;
+		console.column=0;
 	}
 	
 	else{
-		putchat(c, terminal_color, terminal_column, terminal_row);
-		++terminal_column;
+		putchat(c, console.color, console.column, console.row);
+		++console.column;
+		++console.offset;
 	}
 	scroll();
-	update_cursor(terminal_column,terminal_row);
+	update_cursor(console.column,console.row);
 }
  
 static void write(string s, u32 size) 
@@ -141,7 +166,7 @@ void printk(string s)
 static void
 init_cursor(void){
 	enable_cursor();
-	update_cursor(0,0);
+	update_cursor();
 }
 
 static void
@@ -155,12 +180,23 @@ enable_cursor(void)
 
 
 static void
-update_cursor(int x, int y)
+update_cursor()
 {	
 
-	u16 pos = terminal_row * VGA_WIDTH + terminal_column;	
+	u16 pos = console.row * console.width + console.column;	
 	outb(0x3D4, 0x0F);
 	outb(0x3D5, (u8) (pos & 0xFF));
 	outb(0x3D4, 0x0E);
 	outb(0x3D5, (u8) ((pos >> 8) & 0xFF));
+}
+
+extern void 
+MVCURSORC(int i){ // what it means: 'move cursor column'.
+	console.column = console.column + i;
+	update_cursor();
+}
+extern void
+SetBarrier(){
+	console.barrier = console.offset;
+	return;
 }

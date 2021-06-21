@@ -45,8 +45,13 @@ input_read(char *buf,int size)
                 char_read++; 
             }
             else{
-                --buf;
-                --char_read; 
+                
+                if (char_read == 0); // make sure that we're going past where we started
+                else{
+                    --buf;
+                    --char_read; 
+                }
+                
             }
             if(c == 0) {
                 return char_read;

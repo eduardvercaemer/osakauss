@@ -68,6 +68,7 @@ void main(struct stivale2_struct *stivale2_struct) {
     init(stivale2_struct);
     char buf[3] = {0};
     logf("input > ");
+    SetBarrier();
     input_read(&buf, 2);
     logf("\nyou input: %s\n", buf);
     for (;;){

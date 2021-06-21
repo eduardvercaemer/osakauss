@@ -8,12 +8,16 @@
 unsigned char kbdus[128] =
 {
     0,  27, '1', '2', '3', '4', '5', '6', '7', '8',	'9', '0', '-', '=', '\b',	'\t','q', 'w', 'e', 'r',	
-  't', 'y', 'u', 'i', 'o', 'p', '[', ']', '\n',0,'a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l', ';',	
+  't', 'y', 'u', 'i', 'o', 'p', '[', ']', '\n',0 /* Control key*/ ,'a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l', ';',	
  '\'', '`',   0,'\\', 'z', 'x', 'c', 'v', 'b', 'n',	'm', ',', '.', '/',   0,'*',0,	' ',	0,	0,	
-    0,   0,   0,   0,   0,   0,   0,   0,0,	0,	0,	0,	0,	0,	'-',0,	0,0,	'+',0,	0,0,0,	0,0,   0,   0,  0,	0,	0,	
+    0,   0,   0,   0,   0,   0,   0,   0,0,	0,	0,	0,	0,	0,	'-', 
+    1, //  left arrow key
+    0, 
+    2, // right arrow key	
+    '+',0,	0,0,0,	0,0,   0,   0,  0,	0,	0,	
 };	
 
-static char HandelScanCode(char scancode){
+static char HandleScanCode(char scancode){
     char c = (char)kbdus[(u32)scancode];
     return c;
 }
@@ -36,12 +40,17 @@ extern void keyboard_handler(struct regs *r)
     }
     else
     {   
-        char c = HandelScanCode(scancode);
-
-        key_buffer_append(c);
-
-        putch(c);
-        
+        char c = HandleScanCode(scancode);
+        if (c == 2){
+            MVCURSORC(1);
+        }
+        else if (c == 1){
+            MVCURSORC(-1);
+        }
+        else{
+            key_buffer_append(c);
+            putch(c);
+        }        
         
     }
 }
