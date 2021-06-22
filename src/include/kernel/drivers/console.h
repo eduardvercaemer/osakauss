@@ -9,5 +9,5 @@ bool console_require();
 
 extern void MVCURSORC(int);
 
-extern void SetBarrier();
-extern void RemBarrier();
+extern void ConsoleSetBarrier();
+extern void ConsoleRemBarrier();

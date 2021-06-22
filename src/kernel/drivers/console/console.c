@@ -202,12 +202,12 @@ MVCURSORC(int i){ // what it means: 'move cursor column'.
 	update_cursor();
 }
 extern void
-SetBarrier(){ //  set barrier
+ConsoleSetBarrier(){ //  set barrier
 	console.barrier = console.offset;
 	return;
 }
 extern void
-RemBarrier(){ // remove barrier
+ConsoleRemBarrier(){ // remove barrier
 	console.barrier = 0;
 	return;
 }

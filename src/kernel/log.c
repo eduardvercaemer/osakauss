@@ -28,7 +28,7 @@ require_log(enum logging_output output)
 			require_satisfied.console = 1;
 			return 1;
 		case LOG_BOTH:
-			return require_log(LOG_CONSOLE);
+			return require_log(LOG_CONSOLE) && require_log(LOG_SERIAL);
 		default:
 			return 0;
 	}

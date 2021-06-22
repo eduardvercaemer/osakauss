@@ -13,6 +13,14 @@ static u8 serial_received(void);
 static u8 is_transmit_empty(void);
 static u8 serial_init(void);
 
+
+struct SserialConsole{
+	u32 offset;
+	u32 barrier;
+};
+
+static struct SserialConsole SerialConsole = { 0,0 };
+
 static u8
 serial_received(void)
 {
@@ -35,9 +43,11 @@ extern void handle_serial_in(struct regs *r)
 	{
 	case 13:
 		serial_writeb('\n');
+		key_buffer_append('\n');
 		break;
 	case 127:
 		serial_writeb('\b');
+		key_buffer_append('\b');
 		break;
 	default:
 		key_buffer_append(c);
@@ -93,8 +103,23 @@ serial_readb(void)
 extern void
 serial_writeb(char val)
 {
-	while (is_transmit_empty() == 0) ;
-	outb(PORT_COM1, val);
+	if (val == '\b'){
+		if (SerialConsole.offset <= SerialConsole.barrier);
+
+		else{
+			--SerialConsole.offset;
+			while (is_transmit_empty() == 0);
+			SerialConsole.offset++;
+			outb(PORT_COM1, val);
+			--SerialConsole.offset;
+		}
+	}
+	else{
+		while (is_transmit_empty() == 0);
+		SerialConsole.offset++;
+		outb(PORT_COM1, val);
+	}
+	
 }
 
 extern void
@@ -108,3 +133,14 @@ serial_printf(const char *fmt, ...)
 	formatv(f, fmt, args);
 	va_end(args);
 }
+extern void
+SerialSetBarrier(){
+	SerialConsole.barrier = SerialConsole.offset;
+	return;
+}
+extern void
+SerialRemBarrier(){
+	SerialConsole.barrier = 0;
+	return;
+}
+

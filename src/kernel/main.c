@@ -25,7 +25,6 @@ bool init(struct stivale2_struct *stivale2_struct){
     require_log(LOG_BOTH);
 
     logf("   ...:::   osakauss v0.0.0  :::...\n\n");
-
     gdtInit();
     IDTInit();
     ISRInit();
@@ -66,11 +65,16 @@ void *stivale2_get_tag(struct stivale2_struct *stivale2_struct, uint64_t id) {
 
 void main(struct stivale2_struct *stivale2_struct) {
     init(stivale2_struct);
+
     char * buf;
+
+    memset(buf,0,10000);
+
     logf("input > ");
+
     input_readln(buf);
 
-    logf("\ninput = %s\n",buf);
+    logf("\nyour input = %s\n",buf);
     
     for (;;){
         asm volatile("hlt");

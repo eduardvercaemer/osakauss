@@ -69,13 +69,15 @@ extern int
 input_readln(char *buf)
 {
     if (require_satisfied.keyboard || require_satisfied.serial){
-        SetBarrier();
+        ConsoleSetBarrier();
+        SerialSetBarrier();
         int char_read = 0;
         while (1==1) {
             char c = read_key_buffer(true);
             if (c != '\b'){
                 if (c == '\n'){
-                    RemBarrier();
+                    SerialRemBarrier();
+                    ConsoleRemBarrier();
                     return char_read;
                 }
                 *buf = c;
@@ -93,17 +95,20 @@ input_readln(char *buf)
                 
             }
             if(c == 0) {
-                RemBarrier();
+                SerialRemBarrier();
+                ConsoleRemBarrier();
                 return char_read;
             }
             
             
         }
-        RemBarrier();
+        SerialRemBarrier();
+        ConsoleRemBarrier();
         return char_read;
     }
     else{
-        RemBarrier();
+        SerialRemBarrier();
+        ConsoleRemBarrier();
         return 0;
     }
 }

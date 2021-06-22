@@ -25,3 +25,5 @@ extern void serial_writeb(char c);
  * write a format string to serial
  */
 extern void serial_printf(const char *fmt, ...);
+extern void SerialSetBarrier();
+extern void SerialRemBarrier();
