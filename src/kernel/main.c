@@ -8,6 +8,7 @@
 #include <kernel/ISR.h>
 #include <kernel/log.h>
 #include <kernel/input.h>
+#include <kernel/drivers/graphics/framebuffer.h>
 u8 stack[4096];
 
 GDTDescriptor gdtDescriptor = {};
@@ -19,10 +20,44 @@ static bool gdtInit(){
     LoadGDT(&gdtDescriptor);
     return true;
 }
+static struct stivale2_header_tag_framebuffer framebuffer_header_tag = 
+{
+    .tag = {
+        .identifier = STIVALE2_HEADER_TAG_FRAMEBUFFER_ID,
+        .next = 0 
+    },
+    .framebuffer_width  = 800,
+    .framebuffer_height = 600,
+    .framebuffer_bpp    = 32
+}; 
 
+void *stivale2_get_tag(struct stivale2_struct *stivale2_struct, uint64_t id) {
+    struct stivale2_tag *current_tag = (void *)stivale2_struct->tags;
+    for (;;) {
+
+        if (current_tag == NULL) {
+            return NULL;
+        }
+
+        if (current_tag->identifier == id) {
+            return current_tag;
+        }
+
+
+        current_tag = (void *)current_tag->next;
+    }
+}
 
 bool init(struct stivale2_struct *stivale2_struct){
+
+    struct stivale2_struct_tag_framebuffer *framebuffer_tag;
+
+    framebuffer_tag = stivale2_get_tag(stivale2_struct, STIVALE2_STRUCT_TAG_FRAMEBUFFER_ID);
+
+    framebufferInit(framebuffer_tag->framebuffer_addr, framebuffer_tag->framebuffer_width,framebuffer_tag->framebuffer_height,framebuffer_tag->framebuffer_bpp,framebuffer_tag->framebuffer_pitch);
+    
     require_log(LOG_BOTH);
+
 
     logf("   ...:::   osakauss v0.0.0  :::...\n\n");
     gdtInit();
@@ -43,39 +78,29 @@ static struct stivale2_header stivale_hdr = {
 
     .flags = (1 << 1),
 
-    //.tags = (uintptr_t)&framebuffer_hdr_tag
+    .tags = (uintptr_t)&framebuffer_header_tag
 };
 
-void *stivale2_get_tag(struct stivale2_struct *stivale2_struct, uint64_t id) {
-    struct stivale2_tag *current_tag = (void *)stivale2_struct->tags;
-    for (;;) {
-
-        if (current_tag == NULL) {
-            return NULL;
-        }
-
-        if (current_tag->identifier == id) {
-            return current_tag;
-        }
 
 
-        current_tag = (void *)current_tag->next;
-    }
-}
+
+
 
 void main(struct stivale2_struct *stivale2_struct) {
     init(stivale2_struct);
+
 
     char * buf;
 
     memset(buf,0,10000);
 
-    logf("input > ");
+    logf("\ninput > ");
 
     input_readln(buf);
 
     logf("\nyour input = %s\n",buf);
-    
+
+
     for (;;){
         asm volatile("hlt");
     }

@@ -102,3 +102,20 @@ int memcmp(const void* aptr, const void* bptr, usize size) {
 	}
 	return 0;
 }
+
+/*
+char *strdup(char *src)
+{
+    char *str;
+    char *p;
+    int len = 0;
+
+    while (src[len])
+        len++;
+    str = malloc(len + 1);
+    p = str;
+    while (*src)
+        *p++ = *src++;
+    *p = '\0';
+    return str;
+}*/
