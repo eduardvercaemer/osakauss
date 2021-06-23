@@ -69,8 +69,11 @@ extern void keyboard_handler(struct regs *r)
                 key_buffer_append(c-32);
             }
             else{
-                putch(c);
-                key_buffer_append(c);
+                if (c == 0);
+                else{
+                    putch(c);
+                    key_buffer_append(c);
+                }
             }
             
             
