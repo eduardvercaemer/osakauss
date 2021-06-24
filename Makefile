@@ -1,5 +1,6 @@
 KERNEL := kernel.elf
 ISO_IMAGE = disk.iso
+FIRMWARE=legacy
 CC =gcc
 AS=nasm
 LD=ld
@@ -61,6 +62,11 @@ disk:  build
 	mkdir -p iso_root
 	cp  $(KERNEL)  \
 		config/limine.cfg limine/limine.sys limine/limine-cd.bin limine/limine-eltorito-efi.bin iso_root/
+ifeq ($(FIRMWARE),uefi)
+	mkdir iso_root/EFI; 
+	mkdir iso_root/EFI/BOOT;
+	cp limine/BOOTX64.EFI iso_root/EFI/BOOT; 
+endif
 	xorriso -as mkisofs -b limine-cd.bin \
 		-no-emul-boot -boot-load-size 4 -boot-info-table \
 		--efi-boot limine-eltorito-efi.bin \
