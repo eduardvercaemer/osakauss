@@ -54,7 +54,7 @@ bool init(struct stivale2_struct *stivale2_struct){
 
     framebuffer_tag = stivale2_get_tag(stivale2_struct, STIVALE2_STRUCT_TAG_FRAMEBUFFER_ID);
 
-    framebufferInit(framebuffer_tag->framebuffer_addr, framebuffer_tag->framebuffer_width,framebuffer_tag->framebuffer_height,framebuffer_tag->framebuffer_bpp,framebuffer_tag->framebuffer_pitch);
+    framebufferInit(framebuffer_tag->framebuffer_addr,framebuffer_tag->framebuffer_addr, framebuffer_tag->framebuffer_width,framebuffer_tag->framebuffer_height,framebuffer_tag->framebuffer_bpp,framebuffer_tag->framebuffer_pitch);
     
     require_log(LOG_BOTH);
 

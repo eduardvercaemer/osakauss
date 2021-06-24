@@ -10,7 +10,8 @@ struct framebuffer_pixel
 }__attribute__((packed));
 
 struct Sframebuffer{
-    struct framebuffer_pixel* buffer;
+    u64 addr;
+    u8* buffer;
     u16 width;
     u16 height;
     struct framebuffer_pixel color;
@@ -19,7 +20,7 @@ struct Sframebuffer{
 };
 
 extern void PutPixel(u16, u16, struct framebuffer_pixel);
-extern void framebufferInit(struct framebuffer_pixel*, u16,u16,u16,u16);
+extern void framebufferInit(u64 addr,struct framebuffer_pixel*, u16,u16,u16,u16);
 extern struct framebuffer_pixel GeneratePixelFG(u8 red, u8 green, u8 blue);
 extern void SetFramebufferColor(struct framebuffer_pixel pixel);
 
