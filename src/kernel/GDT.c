@@ -35,5 +35,6 @@ extern bool gdtInit(){ // also loads the tss
     gdtDescriptor.Size = sizeof(GDT) - 1;
     gdtDescriptor.Offset = (u64)&DefaultGDT;
     LoadGDT(&gdtDescriptor);
+    TssFlush();
     return true;
 }
