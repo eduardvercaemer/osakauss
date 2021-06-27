@@ -1,4 +1,5 @@
-#pragma once
+#ifndef __IRQ_HEADER__
+#define __IRQ_HEADER__
 #include <types.h>
 
 
@@ -13,3 +14,4 @@ struct regs
 
 	u64  rip; u64 cs; u64 flags; u64 rsp; u64 ss;
 }__attribute__((packed));
+#endif

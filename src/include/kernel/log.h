@@ -1,4 +1,5 @@
-#pragma once
+#ifndef __LOG_HEADER__
+#define __LOG_HEADER__
 #include <types.h>
 
 /* kernel/log.c */
@@ -29,3 +30,4 @@ extern void logf(const char *fmt, ...);
     if (trace)                          \
 		logf("%s :: " fmt, __func__, __VA_ARGS__); \
 	} while (0) ;
+#endif

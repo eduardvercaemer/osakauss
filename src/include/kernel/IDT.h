@@ -1,4 +1,5 @@
-#pragma once
+#ifndef __IDT_HEADER__
+#define __IDT_HEADER__
 #include <types.h>
 
 struct IDT{
@@ -17,3 +18,4 @@ struct IDTPtr {
 }__attribute((packed));
 
 bool IDTInit();
+#endif

@@ -1,4 +1,5 @@
-#pragma once
+#ifndef __GDT_HEADER__
+#define __GDT_HEADER__
 #include <types.h>
 
 struct SGDTDescriptor {
@@ -35,3 +36,4 @@ typedef struct SGDT GDT;
 
 extern GDT DefaultGDT;
 extern void LoadGDT(GDTDescriptor* gdtDescriptor);
+#endif

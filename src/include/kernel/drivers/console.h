@@ -1,4 +1,5 @@
-#pragma once
+#ifndef __CONSOLE_HEADER_
+#define __CONSOLE_HEADER__
 #include <types.h>
 
 void putch(char c);
@@ -11,3 +12,5 @@ extern void MVCURSORC(int);
 
 extern void ConsoleSetBarrier();
 extern void ConsoleRemBarrier();
+
+#endif

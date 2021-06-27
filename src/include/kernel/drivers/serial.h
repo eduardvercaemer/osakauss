@@ -1,4 +1,5 @@
-#pragma once
+#ifndef __SERIAL_HEADER__
+#define __SERIAL_HEADER__
 #include <types.h>
 #include <libs/stdlib.h>
 
@@ -27,3 +28,4 @@ extern void serial_writeb(char c);
 extern void serial_printf(const char *fmt, ...);
 extern void SerialSetBarrier();
 extern void SerialRemBarrier();
+#endif

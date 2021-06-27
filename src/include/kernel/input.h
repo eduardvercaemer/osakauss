@@ -1,4 +1,5 @@
-#pragma once
+#ifndef __INPUT_HEADER__
+#define __INPUT_HEADER__
 #include <types.h>
 enum input {
 	INPUT_SERIAL,
@@ -10,3 +11,4 @@ extern int input_read(char *,int);
 extern void key_buffer_append(char c);
 extern char read_key_buffer(bool);
 extern int input_readln(char *buf);
+#endif
