@@ -14,11 +14,12 @@ extern void framebufferInit(u64 addr,struct framebuffer_pixel* buffer, u16 width
     framebuffer.bpp = bpp;
     framebuffer.pitch = pitch;
     framebuffer.addr = addr;
+    memset(framebuffer.backBuffer, 0, sizeof(u8));
 }
 extern void PutPixel(u16 x, u16 y, struct framebuffer_pixel pixel){
     //this is the equation that should set the postion of the pixel correctly, but it does not work with framebuffer_addr being there.: framebuffer->framebuffer_addr + y * framebuffer->framebuffer_pitch + x * framebuffer->framebuffer_bpp/8
     // we have to do this because the framebuffer is not always flat and if we don't do this it may come out weird.
-    unsigned location = y  * framebuffer.pitch + x * (framebuffer.bpp/8);
+    unsigned location = y * framebuffer.pitch + x * (framebuffer.bpp/8);
     framebuffer.buffer[location] = pixel.red;
     framebuffer.buffer[location+1] = pixel.green;
     framebuffer.buffer[location+2] = pixel.blue;

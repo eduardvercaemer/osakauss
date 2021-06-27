@@ -1,7 +1,7 @@
 KERNEL := kernel.elf
 ISO_IMAGE = disk.iso
 FIRMWARE=legacy
-CC =gcc
+CC := gcc
 AS=nasm
 LD=ld
 OBJCOPY = objcopy

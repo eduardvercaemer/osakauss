@@ -17,6 +17,7 @@ struct Sframebuffer{
     struct framebuffer_pixel color;
     u16 pitch;
     u16 bpp;
+    u8* backBuffer;
 };
 
 extern void PutPixel(u16, u16, struct framebuffer_pixel);
