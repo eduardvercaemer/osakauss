@@ -9,17 +9,9 @@
 #include <kernel/log.h>
 #include <kernel/input.h>
 #include <kernel/drivers/graphics/framebuffer.h>
-u8 stack[4096];
-
-GDTDescriptor gdtDescriptor = {};
+u8 stack[16000];
 
 
-static bool gdtInit(){
-    gdtDescriptor.Size = sizeof(GDT) - 1;
-    gdtDescriptor.Offset = (u64)&DefaultGDT;
-    LoadGDT(&gdtDescriptor);
-    return true;
-}
 static struct stivale2_header_tag_framebuffer framebuffer_header_tag = 
 {
     .tag = {

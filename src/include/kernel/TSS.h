@@ -2,6 +2,8 @@
 #define __TSS_HEADER__
 #include <types.h>
 
+//The tss code is in kernel/GDT.c
+
 struct STSS{
     u32 reserved;
     u64 rsp0;
@@ -20,4 +22,6 @@ struct STSS{
     u16 iopb; // IOPB Offset
 }TSS __attribute__((packed));
 
+
+static void TSSInit();
 #endif
