@@ -1,3 +1,16 @@
+/*
+EFI BOOTABLE : YES
+LEGACY BOOTABLE : YES
+TOTAL RAM : 4096 MB
+GRAPHICS : YES
+FONT : CUSTOM MADE
+DRIVE : 40 MB
+IDT : YES
+GDT : YES
+TSS : WORKING ON IT
+MMAP : WORKING ON IT
+*/
+
 #include <stdint.h>
 #include <stivale2.h>
 #include <x86.h>
@@ -9,6 +22,7 @@
 #include <kernel/log.h>
 #include <kernel/input.h>
 #include <kernel/drivers/graphics/framebuffer.h>
+#include <kernel/mm/phys.h>
 u8 stack[16000];
 
 
@@ -50,6 +64,7 @@ bool init(struct stivale2_struct *stivale2_struct){
     
     require_log(LOG_BOTH);
 
+    trace = true;
 
     logf("   ...:::   osakauss v0.0.0  :::...\n\n");
     gdtInit();
@@ -57,6 +72,7 @@ bool init(struct stivale2_struct *stivale2_struct){
     ISRInit();
     enable_interrupts();    
     require_input(INPUT_BOTH);
+    physmem_init();
     
     return true;
 }
@@ -81,8 +97,13 @@ static struct stivale2_header stivale_hdr = {
 void main(struct stivale2_struct *stivale2_struct) {
     init(stivale2_struct);
 
+    
+    
+    char * hello = physmem_alloc(200);
+    physmem_free(hello);
+    
 
-    char * buf;
+    char * buf = physmem_alloc(0x10000);
 
     memset(buf,0,10000);
 
@@ -91,11 +112,9 @@ void main(struct stivale2_struct *stivale2_struct) {
     input_readln(buf);
 
     logf("\nyour input = %s\n",buf);
-
-
+    physmem_free(buf);
+  
     for (;;){
         asm volatile("hlt");
     }
 }
-
-

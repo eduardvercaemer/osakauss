@@ -42,7 +42,7 @@ $(KERNEL): $(OBJ)
 
 
 $(BUILDDIR)/%.o: $(SRCDIR)/%.c 
-	$(CC) $(CFLAGS) $(INTERNALCFLAGS) -c $< -o $@
+	$(CC) $(CFLAGS) $(INTERNALCFLAGS) -c $< -o $@ 
 $(BUILDDIR)/%.s.o: $(SRCDIR)/%.s
 	@echo $<
 	$(AS) $(ASFLAGS) $< -o $@
@@ -72,6 +72,13 @@ endif
 		--efi-boot limine-eltorito-efi.bin \
 		-efi-boot-part --efi-boot-image --protective-msdos-label \
 		iso_root -o $(ISO_IMAGE)
+
+
+	@#dd if=/dev/zero of=test.img count=50 bs=512
+	@#mformat -i test.img -f 2880 ::
+	@#mcopy -i test.img $(KERNEL) :: # the kernel
+	@#mcopy -i test.img config/limine.cfg limine/limine.sys limine/limine-cd.bin limine/limine-eltorito-efi.bin ::
+
 	limine/limine-install $(ISO_IMAGE)
 	rm -rf iso_root
 run: disk
